@@ -87,7 +87,7 @@ OPENAI_API_KEY=
 | `size` | `auto` 或 `WIDTHxHEIGHT` | `auto` | 宽高需为 16 的倍数 |
 | `quality` | `low` `medium` `high` `xhigh` `max` `auto` | `auto` | `xhigh`/`max` 仅 2.5/2.6 |
 | `background` | `transparent` `opaque` `auto` | `auto` | `transparent` 仅 png/webp |
-| `output_format` | `png` `webp` `jpeg` | `png` | 一期支持三种 |
+| `output_format` | `png` `webp` `jpeg` | `png` | 当前支持三种 |
 | `output_compression` | 0 至 100 整数 | 100 | 仅 jpeg/webp |
 | `moderation` | `auto` `low` | `auto` | |
 | `complexity` | `low` `medium` `high` | 模型默认 | 2.5/2.6 省略时为 `high` |

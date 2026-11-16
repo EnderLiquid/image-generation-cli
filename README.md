@@ -3,7 +3,7 @@
 通过 OpenAI Image API 兼容端点生成和编辑图片的命令行工具。
 
 - `image-generation`：TypeScript CLI
-- `skills/image-generation`：Pi skill，通过软链接接入
+- `skills/image-generation`：通用 skill，可软链接到支持 skills 的 agent
 - 配置：`~/.image-generation-cli`
 - 输出：默认 `./generated`
 
@@ -185,7 +185,7 @@ npm run build
 npm run dev -- --help
 ```
 
-## 一期范围
+## 当前范围
 
 支持：
 
@@ -207,7 +207,6 @@ npm run dev -- --help
 
 ## 文档
 
-- 任务设计：docs/tasks/26-11-16-image-generation-cli/design.md
 - skill 配置：`skills/image-generation/references/config.md`
 - skill CLI：`skills/image-generation/references/cli.md`
 - API 协议：`skills/image-generation/references/image-api.md`

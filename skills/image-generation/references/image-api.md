@@ -124,11 +124,11 @@ edits 使用 JSON，`images` 是 1 到 16 个输入对象的数组：
 - 本地输入支持 png、jpeg、webp。
 - 本地 mask/markup 只支持 PNG。
 - 图片尺寸、alpha 通道和格式一致性由 API 校验。
-- 一期不使用 multipart。
+- 当前只使用 JSON，不使用 multipart。
 
 ## 输出格式
 
-一期支持：
+当前支持：
 
 | 格式 | 扩展名 |
 | --- | --- |
@@ -220,9 +220,9 @@ CLI 保留：
 
 400、认证错误和 moderation 不重试。
 
-## 一期范围
+## 当前边界
 
-不包含：
+当前不包含：
 
 - Streaming 和 `partial_images`
 - Responses API

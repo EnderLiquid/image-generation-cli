@@ -1,6 +1,6 @@
 # image-generation-cli
 
-通过 OpenAI Image API 兼容端点生成和编辑图片的命令行工具，附带 Pi skill。
+通过 OpenAI Image API 兼容端点生成和编辑图片的命令行工具，附带通用 skill。
 
 ## 技术栈
 
@@ -29,12 +29,12 @@ npm run dev -- --help
 - `src/api/`：Image API 客户端
 - `src/input/`：data URL 与 MIME 识别
 - `src/output/`：命名、冲突检查和文件写入
-- `skills/image-generation/`：Pi skill
+- `skills/image-generation/`：通用 skill
 - `docs/tasks/`：任务设计文档
 
 ## 约束
 
-- 一期只支持 `generate` 和 JSON `edit`，输出格式为 png、webp、jpeg。
+- 当前支持 `generate` 和 JSON `edit`，输出格式为 png、webp、jpeg。
 - `apiUrl` 是基址，CLI 拼接 `/images/generations` 或 `/images/edits`。
 - 默认不重试。图片请求可能产生费用，错误默认交给调用者。
 - 配置位于 `~/.image-generation-cli`，密钥通过 `.env` 或进程环境变量提供。

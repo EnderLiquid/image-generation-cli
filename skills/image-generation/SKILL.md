@@ -66,7 +66,7 @@ image-generation generate \
 - `--prompt`、`--prompt-file` 二选一；`--prompt -` 从 stdin 读取。
 - `--dry-run` 输出请求 URL 和脱敏后的请求体，不调用 API。
 - `--retries` 默认 0，失败不会自动重复请求。
-- 输出格式一期支持 `png`、`webp`、`jpeg`。
+- 输出格式支持 `png`、`webp`、`jpeg`。
 
 ## 编辑图片
 
