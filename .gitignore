@@ -1,0 +1,14 @@
+node_modules/
+dist/
+coverage/
+generated/
+*.tsbuildinfo
+
+# 本地参考资料，不进入版本库
+docs/references/
+
+# 临时目录
+.pi/
+
+# 环境变量文件
+.env

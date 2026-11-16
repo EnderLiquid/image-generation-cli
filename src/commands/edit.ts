@@ -1,0 +1,131 @@
+import type {
+  ImageEditRequest,
+  ImageInput,
+} from "../api/types.js";
+import type { RetryInfo } from "../api/client.js";
+import type { OutputDefaults } from "../config/schema.js";
+import { usageError } from "../errors.js";
+import {
+  assertTotalInputBytes,
+  loadImageReference,
+} from "../input/data-url.js";
+import type { CommandResult } from "../output/result.js";
+import { runImageOperation } from "./common.js";
+
+export interface EditCommandOptions {
+  prompt: string;
+  images: string[];
+  mask?: string;
+  markup?: string;
+  inputFidelity?: "high" | "low";
+  configPath?: string;
+  provider?: string;
+  model?: string;
+  outDir?: string;
+  name?: string;
+  force?: boolean;
+  dryRun?: boolean;
+  timeoutSeconds?: number;
+  retries?: number;
+  cliDefaults?: OutputDefaults;
+  cwd?: string;
+  onRetry?: (info: RetryInfo) => void;
+  onWarning?: (message: string) => void;
+}
+
+export function isGptImage2Model(modelName: string): boolean {
+  return (
+    modelName === "gpt-image-2" ||
+    modelName.startsWith("gpt-image-2-")
+  );
+}
+
+export async function editCommand(
+  options: EditCommandOptions,
+): Promise<CommandResult> {
+  if (options.images.length < 1 || options.images.length > 16) {
+    throw usageError("--image 必须提供 1 到 16 个");
+  }
+
+  if (options.mask && options.markup) {
+    throw usageError("--mask 和 --markup 不能同时使用");
+  }
+
+  let totalBytes = 0;
+  const images: ImageInput[] = [];
+
+  for (const value of options.images) {
+    const reference = await loadImageReference(value);
+    totalBytes += reference.rawBytes;
+    assertTotalInputBytes(totalBytes);
+    images.push(reference.input);
+  }
+
+  let mask: ImageInput | undefined;
+  if (options.mask) {
+    const reference = await loadImageReference(options.mask, {
+      requirePng: true,
+    });
+    totalBytes += reference.rawBytes;
+    assertTotalInputBytes(totalBytes);
+    mask = reference.input;
+  }
+
+  let markup: ImageInput | undefined;
+  if (options.markup) {
+    const reference = await loadImageReference(options.markup, {
+      requirePng: true,
+    });
+    totalBytes += reference.rawBytes;
+    assertTotalInputBytes(totalBytes);
+    markup = reference.input;
+  }
+
+  const request: ImageEditRequest = {
+    model: "",
+    prompt: "",
+    images,
+  };
+
+  if (mask) request.mask = mask;
+  if (markup) request.markup = markup;
+  if (options.inputFidelity) {
+    request.input_fidelity = options.inputFidelity;
+  }
+
+  const requestSummary = {
+    images: images.length,
+    mask: Boolean(mask),
+    markup: Boolean(markup),
+  };
+
+  return runImageOperation({
+    operation: "edit",
+    prompt: options.prompt,
+    request,
+    requestSummary,
+    configPath: options.configPath,
+    provider: options.provider,
+    model: options.model,
+    outDir: options.outDir,
+    name: options.name,
+    force: options.force,
+    dryRun: options.dryRun,
+    timeoutSeconds: options.timeoutSeconds,
+    retries: options.retries,
+    cliDefaults: options.cliDefaults,
+    cwd: options.cwd,
+    onRetry: options.onRetry,
+    prepareRequest: (modelName, body) => {
+      if (
+        typeof body.input_fidelity === "string" &&
+        isGptImage2Model(modelName)
+      ) {
+        delete body.input_fidelity;
+        options.onWarning?.(
+          "gpt-image-2 会以高保真处理输入图片，input_fidelity 已省略",
+        );
+      }
+    },
+  });
+}
