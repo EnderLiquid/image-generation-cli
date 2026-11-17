@@ -159,28 +159,12 @@ async function resolvePrompt(options: {
   return text;
 }
 
-function parseInputFidelity(
-  value: string | undefined,
-): "high" | "low" | undefined {
-  if (value === undefined) return undefined;
-
-  if (value !== "high" && value !== "low") {
-    throw usageError("--input-fidelity 必须是 high 或 low");
-  }
-
-  return value;
-}
-
 function printRetry(info: RetryInfo): void {
   const status =
     info.status === undefined ? "" : ` (HTTP ${info.status})`;
   process.stderr.write(
     `retry: attempt ${info.attempt} failed${status}; waiting ${info.waitMs}ms\n`,
   );
-}
-
-function printWarning(message: string): void {
-  process.stderr.write(`warning: ${message}\n`);
 }
 
 function printResult(result: CommandResult): void {
@@ -288,7 +272,6 @@ program
   )
   .option("--mask <value>", "PNG mask，与 --markup 互斥")
   .option("--markup <value>", "PNG 标注层，与 --mask 互斥")
-  .option("--input-fidelity <level>", "high 或 low")
   .option("--provider <name>", "provider 名称")
   .option("--model <name>", "模型 ID")
   .option("--out-dir <dir>", "输出目录，默认 ./generated")
@@ -327,7 +310,6 @@ program
       images: options.image,
       mask: options.mask,
       markup: options.markup,
-      inputFidelity: parseInputFidelity(options.inputFidelity),
       configPath: options.config,
       provider: options.provider,
       model: options.model,
@@ -339,7 +321,6 @@ program
       retries: options.retries,
       cliDefaults: buildCliDefaults(options),
       onRetry: printRetry,
-      onWarning: printWarning,
     });
 
     printResult(result);

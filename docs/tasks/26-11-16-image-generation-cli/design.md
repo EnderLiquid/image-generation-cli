@@ -335,7 +335,6 @@ flowchart LR
 | `--image <value>` | 可重复，1 至 16 个。第一张是主图 |
 | `--mask <value>` | 可选，与 `--markup` 互斥 |
 | `--markup <value>` | 可选，透明 PNG 标注层，与 `--mask` 互斥 |
-| `--input-fidelity <high\|low>` | 可选，仅 edits 发送；`gpt-image-2` 应省略 |
 
 `--image`、`--mask`、`--markup` 的取值支持：
 

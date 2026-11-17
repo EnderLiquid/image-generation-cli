@@ -103,16 +103,6 @@ edits 使用 JSON，`images` 是 1 到 16 个输入对象的数组：
 - 本地 mask/markup 必须是 PNG。
 - mask/markup 应用于第一张输入图片。
 
-`input_fidelity`：
-
-```json
-{
-  "input_fidelity": "high"
-}
-```
-
-`gpt-image-2` 会固定以高保真处理输入图片，CLI 对该模型省略此参数。
-
 ## 输入限制
 
 - `images` 数量 1 到 16。

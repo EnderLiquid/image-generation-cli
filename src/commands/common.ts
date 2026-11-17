@@ -49,10 +49,6 @@ export interface OperationOptions {
   cliDefaults?: OutputDefaults;
   cwd?: string;
   onRetry?: (info: RetryInfo) => void;
-  prepareRequest?: (
-    modelName: string,
-    request: Record<string, unknown>,
-  ) => void;
 }
 
 export async function runImageOperation(
@@ -94,8 +90,6 @@ export async function runImageOperation(
     }
   }
 
-  options.prepareRequest?.(modelName, request);
-
   const plannedCount = values.n ?? 1;
   const plannedFormat = values.output_format ?? "png";
   const outDir = path.resolve(
@@ -123,10 +117,6 @@ export async function runImageOperation(
     if (value !== undefined) {
       requestSummary[key] = value;
     }
-  }
-
-  if (typeof request.input_fidelity === "string") {
-    requestSummary.input_fidelity = request.input_fidelity;
   }
 
   if (options.dryRun) {

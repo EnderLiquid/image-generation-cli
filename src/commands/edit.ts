@@ -17,7 +17,6 @@ export interface EditCommandOptions {
   images: string[];
   mask?: string;
   markup?: string;
-  inputFidelity?: "high" | "low";
   configPath?: string;
   provider?: string;
   model?: string;
@@ -30,14 +29,6 @@ export interface EditCommandOptions {
   cliDefaults?: OutputDefaults;
   cwd?: string;
   onRetry?: (info: RetryInfo) => void;
-  onWarning?: (message: string) => void;
-}
-
-export function isGptImage2Model(modelName: string): boolean {
-  return (
-    modelName === "gpt-image-2" ||
-    modelName.startsWith("gpt-image-2-")
-  );
 }
 
 export async function editCommand(
@@ -89,9 +80,6 @@ export async function editCommand(
 
   if (mask) request.mask = mask;
   if (markup) request.markup = markup;
-  if (options.inputFidelity) {
-    request.input_fidelity = options.inputFidelity;
-  }
 
   const requestSummary = {
     images: images.length,
@@ -116,16 +104,5 @@ export async function editCommand(
     cliDefaults: options.cliDefaults,
     cwd: options.cwd,
     onRetry: options.onRetry,
-    prepareRequest: (modelName, body) => {
-      if (
-        typeof body.input_fidelity === "string" &&
-        isGptImage2Model(modelName)
-      ) {
-        delete body.input_fidelity;
-        options.onWarning?.(
-          "gpt-image-2 会以高保真处理输入图片，input_fidelity 已省略",
-        );
-      }
-    },
   });
 }

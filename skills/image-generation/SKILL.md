@@ -109,7 +109,6 @@ image-generation edit \
 - `--image` 可重复 1 到 16 次，第一张是主图。
 - `--mask` 和 `--markup` 不能同时使用。
 - 本地 mask 和 markup 必须是 PNG。
-- `--input-fidelity high|low` 会发送给除 `gpt-image-2` 外的模型；`gpt-image-2` 自动省略并给出提示。
 
 ## 输出
 

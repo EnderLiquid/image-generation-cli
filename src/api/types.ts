@@ -27,7 +27,6 @@ export interface ImageEditRequest extends ImageGenerationRequest {
   images: ImageInput[];
   mask?: ImageInput;
   markup?: ImageInput;
-  input_fidelity?: "high" | "low";
 }
 
 export type ImageRequest = ImageGenerationRequest | ImageEditRequest;

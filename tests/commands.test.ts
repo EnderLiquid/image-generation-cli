@@ -313,44 +313,6 @@ describe("edit 命令", () => {
     });
   });
 
-  it("为 gpt-image-2 省略 input_fidelity", async () => {
-    const dir = await makeTempDir();
-    const inputPath = path.join(dir, "input.png");
-    await writeFile(inputPath, makePngBuffer());
-
-    const server = await startMockServer(() => ({
-      body: makeApiResponse([makePngBuffer()]),
-    }));
-
-    try {
-      const configPath = await writeTestConfig(dir, {
-        apiUrl: `${server.baseUrl}/v1`,
-        model: "gpt-image-2",
-      });
-      const warnings: string[] = [];
-
-      await editCommand({
-        prompt: "edit",
-        images: [inputPath],
-        inputFidelity: "high",
-        configPath,
-        outDir: path.join(dir, "out"),
-        cwd: dir,
-        cliDefaults: {},
-        onWarning: (message) => warnings.push(message),
-      });
-
-      const body = server.requests[0]?.body as Record<
-        string,
-        unknown
-      >;
-      expect(body.input_fidelity).toBeUndefined();
-      expect(warnings).toHaveLength(1);
-    } finally {
-      await server.close();
-    }
-  });
-
   it("按实际图片格式选择扩展名", async () => {
     const dir = await makeTempDir();
     const inputPath = path.join(dir, "input.png");

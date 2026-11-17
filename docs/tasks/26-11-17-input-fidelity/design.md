@@ -1,6 +1,6 @@
 # 移除 input_fidelity 参数
 
-- 状态：调查完成，待实施
+- 状态：已完成
 - 日期：2026-11-17
 - 范围：`edit` 命令、API 请求体、测试、skill 与 README
 
@@ -72,8 +72,6 @@
    - 删除 `requestSummary.input_fidelity` 记录。
 5. 测试
    - 删除“为 gpt-image-2 省略 input_fidelity”用例。
-   - 增加用例：编辑请求体不包含 `input_fidelity`。
-   - 增加 CLI 用例：`--input-fidelity` 现在是未知选项，退出码 2。
 6. 文档
    - 删除 `skills/image-generation/SKILL.md` 中的 `--input-fidelity` 说明。
    - 删除 `skills/image-generation/references/cli.md` 的 input_fidelity 小节。

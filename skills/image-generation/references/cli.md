@@ -114,17 +114,6 @@ image-generation edit \
 - 本地 mask 和 markup 必须是 PNG。
 - mask/markup 应用于第一张输入图片。
 
-### input_fidelity
-
-```bash
-image-generation edit \
-  --prompt "保留细节" \
-  --image ./input.png \
-  --input-fidelity high
-```
-
-`gpt-image-2` 会自动省略该参数，并输出 warning。
-
 ## 输出
 
 默认目录：
