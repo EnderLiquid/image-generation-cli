@@ -18,15 +18,25 @@
 - 两者不能同时使用。
 - JSON edits 的输入图片放在 `images` 数组；官方 API 的 `mask` 和 `markup` 对象接受 `image_url` 或 `file_id`。
 - 本 CLI 只使用 `image_url`：本地文件转为 base64 data URL，HTTPS URL 直接发送。
+- JSON 下 `images`、`mask`、`markup` 的 `image_url` 上限一致，都是 20,971,520 字符。本地文件转为 data URL 后，单图原始大小约 15MB。
+- 50MB 是 multipart 文件上传的限制。本 CLI 使用 JSON，不适用。
 - 编辑提示词需要描述要改什么，以及要保留什么。
 
 ### mask
 
 用途：指定需要编辑的区域。
 
-官方定义：
+官方语义：
 
-> An additional image whose fully transparent areas (e.g. where alpha is zero) indicate where `image` should be edited. If there are multiple images provided, the mask will be applied on the first image. Must be a valid PNG file, less than 4MB, and have the same dimensions as `image`.
+> An additional image whose fully transparent areas (e.g. where alpha is zero) indicate where `image` should be edited. If there are multiple images provided, the mask will be applied on the first image.
+
+JSON 字段：
+
+> `mask: optional object { file_id, image_url }`
+>
+> `image_url: optional string`
+> A fully qualified URL or base64-encoded data URL.
+> `maxLength: 20971520`, `format: uri`
 
 用法：
 
@@ -42,19 +52,15 @@
 - 必须是合法 PNG。
 - 必须包含 alpha 通道。
 - 宽高必须与第一张输入图一致。
-- API 参考给出的 mask 大小上限是 4MB。
+- JSON 下使用与其他输入图相同的 `image_url` 上限，没有 mask 专用文件大小限制。
 - 模型把 mask 当作提示，可能不会严格遵循精确形状。
 - 没有找到按模型版本限制 mask 的说明，按 GPT Image 模型通用能力处理。
 
-### mask 文档差异
+### 大小限制说明
 
-官方指南另有一句“image to edit and mask must be of the same format and size (less than 50MB in size)”。API 参考的字段说明更具体：
+API 的 Python SDK/multipart 文档写过 mask 小于 4MB，指南也写过 50MB。这两处对应 multipart 文件上传；JSON 请求使用 `image_url`，`images`、`mask`、`markup` 共用 20,971,520 字符的上限，本地图片约 15MB。当前 CLI 走 JSON，按统一上限处理，不为 mask 或 markup 设置独立大小限制。
 
-- mask 必须是合法 PNG。
-- mask 小于 4MB。
-- mask 与 `image` 尺寸一致。
-
-输入图片可以是 png、jpeg 或 webp，而 mask 必须是 PNG，因此“同格式”不能按字面理解为输入图和 mask 都使用同一格式。实现按 API 参考处理：mask 统一为 PNG，尺寸与第一张图一致，大小按更严格的 4MB 限制。
+输入图片可以是 png、jpeg 或 webp，而 mask 必须是 PNG，因此指南里的“同格式”不能按字面理解为输入图和 mask 都使用同一格式。实现按 JSON 字段约束处理：mask 统一为 PNG，尺寸与第一张图一致。
 
 ### markup
 
@@ -81,7 +87,7 @@
 - 标注层与第一张图在方向校正后必须宽高一致。
 - 标注层必须包含透明像素。
 - 第一张输入图和标注层各自最多 16,777,216 像素。
-- 标注文件最大 50MB。
+- JSON 下与其他输入图共用 20,971,520 字符的 `image_url` 上限，没有 markup 专用文件大小限制。
 - 标注层不能和 `mask` 同时使用。
 - 官方指南说明 markup 支持 GPT-Image-2.5 和 GPT-Image-2.6；API 参考当前只写了 GPT Image 2.5。文档按 2.5/2.6 支持描述。
 
@@ -94,6 +100,7 @@
 | 透明区域含义 | 要编辑的区域 | 没有标注的背景，必须保留透明 |
 | 格式 | PNG，含 alpha | PNG，含透明像素 |
 | 尺寸 | 与第一张图一致 | 与第一张图一致 |
+| 大小 | 与其他图片共用 JSON `image_url` 上限 | 与其他图片共用 JSON `image_url` 上限 |
 | 作用对象 | 第一张输入图 | 第一张输入图 |
 | 同时使用 | 不可与 markup 组合 | 不可与 mask 组合 |
 | 模型支持 | GPT Image 模型 | GPT-Image-2.5、GPT-Image-2.6 |
@@ -104,7 +111,7 @@
 
 - `skills/image-generation/SKILL.md`
   - 只写了“mask 或 markup 二选一”“本地 mask 和 markup 必须是 PNG”。
-  - 没有写透明区域的含义、alpha 要求、尺寸要求、文件大小、第一张图规则和模型支持。
+  - 没有写透明区域的含义、alpha 要求、尺寸要求、第一张图规则、模型支持，以及 JSON 下所有图片共用同一大小上限。
 - `skills/image-generation/references/cli.md`
   - 写了“mask/markup 应用于第一张输入图片”，但没有制作步骤。
 - `skills/image-generation/references/image-api.md`
@@ -112,9 +119,9 @@
 
 ### 实现
 
-- `src/input/data-url.ts` 只检查 PNG 魔数，没有检查 alpha 通道、像素尺寸或 mask 的 4MB 限制。
+- `src/input/data-url.ts` 只检查 PNG 魔数，没有检查 alpha 通道和像素尺寸；所有本地图片已经统一受 20,971,520 字符 data URL 上限约束。
 - `src/commands/edit.ts` 已实现 `mask`/`markup` 互斥和第一张图的发送顺序，但没有模型能力提示。
-- 当前总输入限制是 64MB，不能替代 mask 的 4MB 和 markup 的 50MB 专用限制。
+- 当前总输入 64MB 是 CLI 的聚合限制；JSON 单图上限已经统一处理，没有 mask 或 markup 专用大小限制。
 
 ## 实施建议
 
@@ -123,8 +130,8 @@
 在 `skills/image-generation/SKILL.md` 的编辑章节增加一个简短小节，至少包含：
 
 - 两者都只作用于第一张图。
-- mask：透明区域表示要编辑的区域；PNG、alpha、同尺寸、4MB。
-- markup：单独透明 PNG 标注层，不压平到原图；同尺寸、保留透明像素、50MB；支持 2.5/2.6。
+- mask：透明区域表示要编辑的区域；PNG、alpha、同尺寸；与其他图片共用 JSON data URL 上限（约 15MB）。
+- markup：单独透明 PNG 标注层，不压平到原图；同尺寸、保留透明像素；与其他图片共用 JSON 上限；支持 2.5/2.6。
 - 两者互斥。
 - 提示词要说明修改内容和需要保留的细节。
 
@@ -147,17 +154,15 @@ markup 示例只把 `mask` 换成 `markup`，并明确不能同时出现。
 
 以下校验能提前发现错误，但不是本次文档修复的前置条件：
 
-- mask 本地文件不超过 4MB。
-- markup 本地文件不超过 50MB。
 - PNG 包含 alpha 通道或 `tRNS`。
 - mask/markup 的宽高与第一张图一致。
 - 使用 markup 且模型不属于 2.5/2.6 时给出 warning。
 
-尺寸校验需要解析 PNG/JPEG/WebP 头部。实现时应把“API 要求”和“CLI 提前校验”分开，避免把 API 的最终判断完全复制到客户端。
+大小不需要新增校验：所有本地图片已经受 20,971,520 字符 data URL 上限约束。尺寸校验需要解析 PNG/JPEG/WebP 头部。实现时应把“API 要求”和“CLI 提前校验”分开，避免把 API 的最终判断完全复制到客户端。
 
 ## 验收
 
-- skill 能直接说明 mask 和 markup 的制作步骤、透明区域含义、尺寸/格式/大小限制。
+- skill 能直接说明 mask 和 markup 的制作步骤、透明区域含义、尺寸/格式限制，以及所有图片共用同一大小上限。
 - skill 明确两者都只作用于第一张输入图，且不能同时使用。
 - skill 明确 markup 支持 2.5/2.6，并说明标注层不能压平到原图。
 - `--mask` 和 `--markup` 的帮助文本至少提到 PNG、第一张图、互斥。
