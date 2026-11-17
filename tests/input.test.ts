@@ -42,16 +42,6 @@ describe("输入图片", () => {
     expect(reference.rawBytes).toBe(0);
   });
 
-  it("拒绝 Files API file_id", async () => {
-    await expect(
-      loadImageReference("file-abc123"),
-    ).rejects.toMatchObject({
-      kind: "usage",
-      exitCode: 2,
-      message: "不支持 Files API file_id，请使用本地文件或 HTTPS URL",
-    });
-  });
-
   it("mask 要求 PNG", async () => {
     const dir = await makeTempDir();
     const inputPath = path.join(dir, "input.jpg");
