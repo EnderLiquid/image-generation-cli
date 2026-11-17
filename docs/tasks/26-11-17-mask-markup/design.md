@@ -121,7 +121,7 @@ API 的 Python SDK/multipart 文档写过 mask 小于 4MB，指南也写过 50MB
 
 - `src/input/data-url.ts` 只检查 PNG 魔数，没有检查 alpha 通道和像素尺寸；所有本地图片已经统一受 20,971,520 字符 data URL 上限约束。
 - `src/commands/edit.ts` 已实现 `mask`/`markup` 互斥和第一张图的发送顺序，但没有模型能力提示。
-- 当前总输入 64MB 是 CLI 的聚合限制；JSON 单图上限已经统一处理，没有 mask 或 markup 专用大小限制。
+- JSON 单图上限已经统一处理，没有 mask 或 markup 专用大小限制。
 
 ## 实施建议
 
