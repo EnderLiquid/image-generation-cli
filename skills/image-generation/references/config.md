@@ -22,42 +22,26 @@ Windows 下 `~` 为 `%USERPROFILE%`。
 
 ## 示例
 
-示例中的模型名按实际 provider 替换。示例中的 `quality` 用于演示层级覆盖，实际使用可以省略。
+示例中的模型名按实际 provider 替换。未设置的输出参数由 API 使用自身默认值。
 
 ```json
 {
   "defaultProvider": "openai",
-  "defaults": {
-    "n": 1,
-    "size": "auto",
-    "quality": "medium",
-    "background": "auto",
-    "output_format": "png"
-  },
   "providers": {
     "openai": {
       "apiUrl": "https://api.openai.com/v1",
       "apiKey": "${OPENAI_API_KEY}",
       "defaultModel": "gpt-image-2.6-flare",
-      "defaults": {
-        "quality": "high"
-      },
       "models": {
-        "gpt-image-2.6-flare": {
-          "defaults": {
-            "size": "1536x1024"
-          }
-        },
-        "gpt-image-2.6-sunburst": {
-          "defaults": {
-            "quality": "max"
-          }
-        }
+        "gpt-image-2.6-flare": {},
+        "gpt-image-2.6-sunburst": {}
       }
     }
   }
 }
 ```
+
+`models` 下的空对象表示不为该模型覆盖默认值。
 
 `.env.example`：
 

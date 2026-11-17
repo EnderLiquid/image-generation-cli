@@ -1,33 +1,13 @@
 {
   "defaultProvider": "openai",
-  "defaults": {
-    "n": 1,
-    "size": "auto",
-    "quality": "medium",
-    "background": "auto",
-    "output_format": "png"
-  },
   "providers": {
     "openai": {
       "apiUrl": "https://api.openai.com/v1",
       "apiKey": "${OPENAI_API_KEY}",
       "defaultModel": "gpt-image-2.6-flare",
-      "defaults": {
-        "quality": "high"
-      },
       "models": {
-        "gpt-image-2.6-flare": {
-          "defaults": {
-            "size": "1536x1024",
-            "output_format": "webp",
-            "output_compression": 90
-          }
-        },
-        "gpt-image-2.6-sunburst": {
-          "defaults": {
-            "quality": "max"
-          }
-        }
+        "gpt-image-2.6-flare": {},
+        "gpt-image-2.6-sunburst": {}
       }
     }
   }

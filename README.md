@@ -47,7 +47,7 @@ image-generation init
 ├── .env.example
 ```
 
-编辑 `config.json` 填入 provider、`apiUrl`、模型和默认值。复制 `.env.example` 为 `.env`，填入密钥：
+编辑 `config.json` 填入 provider、`apiUrl` 和模型。默认值按需添加，未设置时由 API 使用自身默认值。复制 `.env.example` 为 `.env`，填入密钥：
 
 ```dotenv
 OPENAI_API_KEY=sk-...

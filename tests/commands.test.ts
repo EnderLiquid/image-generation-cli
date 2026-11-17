@@ -7,6 +7,7 @@ import { generateCommand } from "../src/commands/generate.js";
 import { initCommand } from "../src/commands/init.js";
 import { skillPathCommand } from "../src/commands/skill-path.js";
 import { AppError } from "../src/errors.js";
+import { parseConfig } from "../src/config/schema.js";
 import {
   makeApiResponse,
   makeJpegBuffer,
@@ -445,6 +446,21 @@ describe("init、doctor 与 skill", () => {
     const second = await initCommand({ home: dir });
     expect(second.created).toHaveLength(0);
     expect(second.skipped).toHaveLength(2);
+  });
+
+  it("初始化的配置不包含输出默认值", async () => {
+    const dir = await makeTempDir();
+
+    const result = await initCommand({ home: dir });
+    const config = parseConfig(
+      JSON.parse(await readFile(result.configPath, "utf8")),
+    );
+
+    expect(config.defaults).toBeUndefined();
+    expect(config.providers.openai?.defaults).toBeUndefined();
+    for (const model of Object.values(config.providers.openai?.models ?? {})) {
+      expect(model.defaults).toBeUndefined();
+    }
   });
 
   it("doctor 对有效配置返回 ok", async () => {
