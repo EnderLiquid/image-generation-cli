@@ -1,6 +1,6 @@
 # 移除本地输入 64MB 聚合限制
 
-- 状态：调查完成，待实施
+- 状态：已实施
 - 日期：2026-11-17
 - 范围：`src/input/data-url.ts`、`src/commands/edit.ts`、测试、skill 文档、旧任务文档
 

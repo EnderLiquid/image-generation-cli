@@ -1,4 +1,4 @@
-import { writeFile } from "node:fs/promises";
+import { truncate, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
@@ -40,6 +40,18 @@ describe("输入图片", () => {
 
     expect(reference.input).toEqual({ image_url: url });
     expect(reference.rawBytes).toBe(0);
+  });
+
+  it("单张本地图片超过上限时报错", async () => {
+    const dir = await makeTempDir();
+    const inputPath = path.join(dir, "oversized.png");
+    await writeFile(inputPath, makePngBuffer());
+    await truncate(inputPath, 16 * 1024 * 1024);
+
+    await expect(loadImageReference(inputPath)).rejects.toMatchObject({
+      kind: "usage",
+      exitCode: 2,
+    });
   });
 
   it("mask 要求 PNG", async () => {

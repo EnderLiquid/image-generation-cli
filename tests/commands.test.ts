@@ -245,6 +245,43 @@ describe("edit 命令", () => {
     }
   });
 
+  it("多张本地图片一起提交", async () => {
+    const dir = await makeTempDir();
+    const imagePaths = ["one.png", "two.png", "three.png"].map(
+      (name) => path.join(dir, name),
+    );
+
+    for (const imagePath of imagePaths) {
+      await writeFile(imagePath, makePngBuffer());
+    }
+
+    const configPath = await writeTestConfig(dir, {
+      apiUrl: "https://example.com/v1",
+    });
+
+    const result = await editCommand({
+      prompt: "合成一张图",
+      images: imagePaths,
+      configPath,
+      cwd: dir,
+      dryRun: true,
+      cliDefaults: {},
+    });
+
+    if (!("dryRun" in result)) throw new Error("expected dry run");
+    const request = result.request as {
+      images?: Array<{ image_url?: string }>;
+    };
+    expect(request.images).toHaveLength(3);
+    expect(
+      request.images?.every((image) =>
+        image.image_url?.startsWith(
+          "[data-url data:image/png;base64;",
+        ),
+      ),
+    ).toBe(true);
+  });
+
   it("拒绝同时使用 mask 和 markup", async () => {
     const dir = await makeTempDir();
     const configPath = await writeTestConfig(dir, {

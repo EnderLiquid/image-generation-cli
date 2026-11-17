@@ -108,7 +108,6 @@ edits 使用 JSON，`images` 是 1 到 16 个输入对象的数组：
 - `images` 数量 1 到 16。
 - 单个 `image_url` 不超过 20,971,520 字符。
 - 本地图片转为 data URL 后受同一限制，单文件约 15MB。
-- 所有本地输入原始字节合计不超过 64MB。
 - 本地输入支持 png、jpeg、webp。
 - 本地 mask/markup 只支持 PNG。
 - 图片尺寸、alpha 通道和格式一致性由 API 校验。

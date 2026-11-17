@@ -5,10 +5,7 @@ import type {
 import type { RetryInfo } from "../api/client.js";
 import type { OutputDefaults } from "../config/schema.js";
 import { usageError } from "../errors.js";
-import {
-  assertTotalInputBytes,
-  loadImageReference,
-} from "../input/data-url.js";
+import { loadImageReference } from "../input/data-url.js";
 import type { CommandResult } from "../output/result.js";
 import { runImageOperation } from "./common.js";
 
@@ -42,13 +39,10 @@ export async function editCommand(
     throw usageError("--mask 和 --markup 不能同时使用");
   }
 
-  let totalBytes = 0;
   const images: ImageInput[] = [];
 
   for (const value of options.images) {
     const reference = await loadImageReference(value);
-    totalBytes += reference.rawBytes;
-    assertTotalInputBytes(totalBytes);
     images.push(reference.input);
   }
 
@@ -57,8 +51,6 @@ export async function editCommand(
     const reference = await loadImageReference(options.mask, {
       requirePng: true,
     });
-    totalBytes += reference.rawBytes;
-    assertTotalInputBytes(totalBytes);
     mask = reference.input;
   }
 
@@ -67,8 +59,6 @@ export async function editCommand(
     const reference = await loadImageReference(options.markup, {
       requirePng: true,
     });
-    totalBytes += reference.rawBytes;
-    assertTotalInputBytes(totalBytes);
     markup = reference.input;
   }
 

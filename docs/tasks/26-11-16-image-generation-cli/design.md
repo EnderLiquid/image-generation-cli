@@ -549,7 +549,6 @@ Authorization: Bearer <apiKey>
 - `images` 数量 1 至 16
 - 单个 `image_url` 不超过 20,971,520 字符
 - 本地图片转 data URL 后计入该限制，单文件约 15MB 以内
-- 所有本地输入原始字节合计不超过 64MB
 - 本地 mask/markup 要求 PNG
 - mask/markup 的尺寸、alpha 通道由 API 校验
 - 总请求体不包含任何流式字段

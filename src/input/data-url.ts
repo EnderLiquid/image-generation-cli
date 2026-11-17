@@ -5,7 +5,6 @@ import { ioError, usageError } from "../errors.js";
 import { detectImageFormat, mimeForFormat } from "./mime.js";
 
 export const MAX_IMAGE_URL_CHARS = 20_971_520;
-export const MAX_TOTAL_INPUT_BYTES = 64 * 1024 * 1024;
 const MAX_LOCAL_BYTES =
   Math.floor((MAX_IMAGE_URL_CHARS - 64) / 4) * 3;
 
@@ -113,14 +112,6 @@ export async function loadImageReference(
     rawBytes: buffer.length,
     display: `${filePath} (${format}, ${buffer.length} 字节)`,
   };
-}
-
-export function assertTotalInputBytes(totalBytes: number): void {
-  if (totalBytes > MAX_TOTAL_INPUT_BYTES) {
-    throw usageError(
-      `本地图片总大小超过 ${MAX_TOTAL_INPUT_BYTES} 字节限制`,
-    );
-  }
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
