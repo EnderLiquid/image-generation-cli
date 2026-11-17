@@ -35,10 +35,6 @@ export function writeJson(value: unknown): void {
   process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
 }
 
-export function writeSavedPath(filePath: string): void {
-  process.stderr.write(`saved: ${filePath}\n`);
-}
-
 export function writeError(error: AppError): void {
   process.stderr.write(`${JSON.stringify(error.toJSON(), null, 2)}\n`);
 }

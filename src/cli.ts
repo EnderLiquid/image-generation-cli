@@ -25,12 +25,7 @@ import {
   usageError,
 } from "./errors.js";
 import type { RetryInfo } from "./api/client.js";
-import {
-  writeError,
-  writeJson,
-  writeSavedPath,
-  type CommandResult,
-} from "./output/result.js";
+import { writeError, writeJson, type CommandResult } from "./output/result.js";
 import { VERSION } from "./version.js";
 
 function parseInteger(value: string): number {
@@ -168,12 +163,6 @@ function printRetry(info: RetryInfo): void {
 }
 
 function printResult(result: CommandResult): void {
-  if (!("dryRun" in result)) {
-    for (const file of result.files) {
-      writeSavedPath(file.path);
-    }
-  }
-
   writeJson(result);
 }
 

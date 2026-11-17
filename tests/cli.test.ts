@@ -174,6 +174,7 @@ describe("CLI 入口", () => {
     ]);
 
     expect(result.code).toBe(0);
+    expect(result.stderr).toBe("");
     const output = JSON.parse(result.stdout) as {
       ok: boolean;
       dryRun: boolean;
@@ -197,7 +198,7 @@ describe("CLI 入口", () => {
     expect(output.ok).toBe(false);
   });
 
-  it("generate 完整流程输出 saved 路径", async () => {
+  it("generate 成功时 stderr 为空", async () => {
     const dir = await makeTempDir();
     const image = makePngBuffer();
     const server = await startMockServer(() => ({
@@ -224,7 +225,7 @@ describe("CLI 入口", () => {
         files: Array<{ path: string }>;
       };
       expect(output.files[0]?.path).toContain(outDir);
-      expect(result.stderr).toContain("saved: ");
+      expect(result.stderr).toBe("");
       expect(await readFile(output.files[0]!.path)).toEqual(image);
     } finally {
       await server.close();

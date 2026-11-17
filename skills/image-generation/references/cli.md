@@ -140,11 +140,7 @@ image-20261116-202555-3f9a-2.png
 
 目标文件已存在时默认报错，退出码 6。传 `--force` 才覆盖。
 
-stdout 输出结果 JSON，文件路径为绝对路径。stderr 输出：
-
-```text
-saved: D:\work\generated\image-20261116-202555-3f9a.png
-```
+stdout 输出结果 JSON，文件路径为绝对路径。
 
 ## 成功输出
 
