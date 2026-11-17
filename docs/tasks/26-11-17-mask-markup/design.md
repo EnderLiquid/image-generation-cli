@@ -1,8 +1,8 @@
 # 澄清 mask 与 markup 的用法
 
-- 状态：调查完成，待实施
+- 状态：已实施
 - 日期：2026-11-17
-- 范围：skill 文档、`edit` 帮助文本、可选的输入校验
+- 范围：skill 文档、README、`edit` 帮助文本、输入校验
 
 ## 背景
 
@@ -105,7 +105,7 @@ API 的 Python SDK/multipart 文档写过 mask 小于 4MB，指南也写过 50MB
 | 同时使用 | 不可与 markup 组合 | 不可与 mask 组合 |
 | 模型支持 | GPT Image 模型 | GPT-Image-2.5、GPT-Image-2.6 |
 
-## 当前文档与实现缺口
+## 实施前的缺口
 
 ### 文档
 
@@ -159,6 +159,13 @@ markup 示例只把 `mask` 换成 `markup`，并明确不能同时出现。
 - 使用 markup 且模型不属于 2.5/2.6 时给出 warning。
 
 大小不需要新增校验：所有本地图片已经受 20,971,520 字符 data URL 上限约束。尺寸校验需要解析 PNG/JPEG/WebP 头部。实现时应把“API 要求”和“CLI 提前校验”分开，避免把 API 的最终判断完全复制到客户端。
+
+## 实施
+
+- `skills/image-generation/SKILL.md`、`references/cli.md`、`references/image-api.md` 和 `README.md` 补充 mask/markup 的制作步骤、透明区域含义、尺寸和格式限制、共用大小上限、第一张图规则和模型支持。
+- `--mask`、`--markup` 帮助文本补充 PNG、第一张图和互斥约束。
+- `src/input/image-info.ts` 使用 sharp 读取图片元数据；本地 mask/markup 在调用 API 前校验透明像素和按 EXIF 方向校正后的宽高，错误退出码为 2。
+- 测试使用 sharp 生成真实 PNG/JPEG/WebP 图片，覆盖透明通道、EXIF 方向和尺寸校验。
 
 ## 验收
 

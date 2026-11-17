@@ -270,8 +270,14 @@ program
     collect,
     [],
   )
-  .option("--mask <value>", "PNG mask，与 --markup 互斥")
-  .option("--markup <value>", "PNG 标注层，与 --mask 互斥")
+  .option(
+    "--mask <value>",
+    "PNG mask，透明区域表示要编辑的地方；仅作用于第一张图，与 --markup 互斥",
+  )
+  .option(
+    "--markup <value>",
+    "PNG 标注层，必须保留透明像素；仅作用于第一张图，与 --mask 互斥",
+  )
   .option("--provider <name>", "provider 名称")
   .option("--model <name>", "模型 ID")
   .option("--out-dir <dir>", "输出目录，默认 ./generated")

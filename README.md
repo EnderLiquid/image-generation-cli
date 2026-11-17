@@ -11,6 +11,7 @@
 
 - Node.js 22 或更高版本
 - 支持 `POST /images/generations` 和 `POST /images/edits` 的 OpenAI Image API 端点
+- sharp 会在安装时选择对应平台的预编译二进制，常见 Windows、macOS、Linux 无需额外系统依赖
 
 ## 安装
 
@@ -97,6 +98,8 @@ image-generation edit \
   --image ./kitchen.png \
   --markup ./overlay.png
 ```
+
+mask 和 markup 都只作用于第一张图，且不能同时使用。`--mask` 的透明区域表示要编辑的地方；`--markup` 使用单独的透明 PNG 标注层，不能压平到原图。两者都要求 PNG、宽高与第一张图一致，并与其他图片使用相同的 data URL 大小上限。
 
 预览请求，不调用 API：
 

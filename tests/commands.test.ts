@@ -304,6 +304,99 @@ describe("edit 命令", () => {
     });
   });
 
+  it("mask 尺寸与第一张输入图不一致时拒绝", async () => {
+    const dir = await makeTempDir();
+    const inputPath = path.join(dir, "input.png");
+    const maskPath = path.join(dir, "mask.png");
+    const input = await makePngBuffer({ width: 4, height: 4 });
+    const mask = await makePngBuffer({ width: 2, height: 2 });
+    await writeFile(inputPath, input);
+    await writeFile(maskPath, mask);
+
+    await expect(
+      editCommand({
+        prompt: "edit",
+        images: [inputPath],
+        mask: maskPath,
+        cwd: dir,
+        dryRun: true,
+        cliDefaults: {},
+      }),
+    ).rejects.toMatchObject({
+      kind: "usage",
+      exitCode: 2,
+    });
+  });
+
+  it("markup 尺寸与第一张输入图一致时通过", async () => {
+    const dir = await makeTempDir();
+    const inputPath = path.join(dir, "input.png");
+    const markupPath = path.join(dir, "markup.png");
+    const input = await makePngBuffer({ width: 4, height: 6 });
+    const markup = await makePngBuffer({ width: 4, height: 6 });
+    await writeFile(inputPath, input);
+    await writeFile(markupPath, markup);
+    const configPath = await writeTestConfig(dir, {
+      apiUrl: "https://example.com/v1",
+    });
+
+    const result = await editCommand({
+      prompt: "edit",
+      images: [inputPath],
+      markup: markupPath,
+      configPath,
+      cwd: dir,
+      dryRun: true,
+      cliDefaults: {},
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      dryRun: true,
+      operation: "edit",
+    });
+
+    if (!("dryRun" in result)) throw new Error("expected dry run");
+    expect(result.request).toMatchObject({
+      markup: {
+        image_url: expect.stringContaining("[data-url"),
+      },
+    });
+  });
+
+  it("markup 按 EXIF 方向比较宽高", async () => {
+    const dir = await makeTempDir();
+    const inputPath = path.join(dir, "input.jpg");
+    const markupPath = path.join(dir, "markup.png");
+    const input = await makeJpegBuffer({
+      width: 4,
+      height: 6,
+      orientation: 6,
+    });
+    const markup = await makePngBuffer({ width: 6, height: 4 });
+    await writeFile(inputPath, input);
+    await writeFile(markupPath, markup);
+    const configPath = await writeTestConfig(dir, {
+      apiUrl: "https://example.com/v1",
+    });
+
+    const result = await editCommand({
+      prompt: "edit",
+      images: [inputPath],
+      markup: markupPath,
+      configPath,
+      cwd: dir,
+      dryRun: true,
+      cliDefaults: {},
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      dryRun: true,
+      operation: "edit",
+    });
+  });
+
   it("按实际图片格式选择扩展名", async () => {
     const dir = await makeTempDir();
     const inputPath = path.join(dir, "input.png");

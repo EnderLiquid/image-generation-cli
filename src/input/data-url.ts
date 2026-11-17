@@ -2,6 +2,7 @@ import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import type { ImageInput } from "../api/types.js";
 import { ioError, usageError } from "../errors.js";
+import { readImageInfo, type ImageInfo } from "./image-info.js";
 import { detectImageFormat, mimeForFormat } from "./mime.js";
 
 export const MAX_IMAGE_URL_CHARS = 20_971_520;
@@ -12,10 +13,13 @@ export interface ImageReference {
   input: ImageInput;
   rawBytes: number;
   display: string;
+  info?: ImageInfo;
 }
 
 export interface LoadImageOptions {
   requirePng?: boolean;
+  requireAlpha?: boolean;
+  label?: string;
 }
 
 function isHttpUrl(value: string): boolean {
@@ -95,8 +99,18 @@ export async function loadImageReference(
     );
   }
 
+  const subject = options.label ?? "图片";
+
   if (options.requirePng && format !== "png") {
-    throw usageError(`mask 和 markup 必须是 PNG: ${filePath}`);
+    throw usageError(`${subject} 必须是 PNG: ${filePath}`);
+  }
+
+  const info = await readImageInfo(buffer, format);
+
+  if (options.requireAlpha && info && !info.hasAlpha) {
+    throw usageError(
+      `${subject} 必须包含透明像素（alpha 通道或 tRNS）: ${filePath}`,
+    );
   }
 
   const dataUrl = `data:${mimeForFormat(format)};base64,${buffer.toString("base64")}`;
@@ -111,6 +125,7 @@ export async function loadImageReference(
     input: { image_url: dataUrl },
     rawBytes: buffer.length,
     display: `${filePath} (${format}, ${buffer.length} 字节)`,
+    info,
   };
 }
 

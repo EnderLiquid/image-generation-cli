@@ -4,6 +4,7 @@ import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 import path from "node:path";
 import type { IncomingHttpHeaders } from "node:http";
+import sharp from "sharp";
 
 export interface MockRequest {
   method: string;
@@ -164,26 +165,128 @@ export async function writeTestConfig(
   return configPath;
 }
 
-export function makePngBuffer(): Buffer {
-  return Buffer.from([
-    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
-    0x00, 0x00, 0x00, 0x0d,
-  ]);
+export interface PngOptions {
+  width?: number;
+  height?: number;
+  alpha?: boolean;
+  palette?: boolean;
 }
 
-export function makeJpegBuffer(): Buffer {
-  return Buffer.from([
-    0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46,
-    0x49, 0x46, 0x00, 0x01,
-  ]);
+async function createPngBuffer(
+  options: PngOptions = {},
+): Promise<Buffer> {
+  const width = options.width ?? 1;
+  const height = options.height ?? 1;
+  const alpha = options.alpha ?? true;
+  const background = alpha
+    ? { r: 255, g: 0, b: 0, alpha: 0 }
+    : { r: 255, g: 0, b: 0 };
+  const image = sharp({
+    create: {
+      width,
+      height,
+      channels: alpha ? 4 : 3,
+      background,
+    },
+  });
+
+  return options.palette
+    ? image.png({ palette: true, colours: 16 }).toBuffer()
+    : image.png().toBuffer();
 }
 
-export function makeWebpBuffer(): Buffer {
-  const header = Buffer.alloc(12);
-  header.write("RIFF", 0, "ascii");
-  header.writeUInt32LE(4, 4);
-  header.write("WEBP", 8, "ascii");
-  return Buffer.concat([header, Buffer.from([0x56, 0x50, 0x38, 0x20])]);
+export interface JpegOptions {
+  width?: number;
+  height?: number;
+  orientation?: number;
+}
+
+async function createJpegBuffer(
+  options: JpegOptions = {},
+): Promise<Buffer> {
+  const width = options.width ?? 1;
+  const height = options.height ?? 1;
+  let image = sharp({
+    create: {
+      width,
+      height,
+      channels: 3,
+      background: { r: 255, g: 0, b: 0 },
+    },
+  });
+
+  if (options.orientation !== undefined) {
+    image = image.withMetadata({ orientation: options.orientation });
+  }
+
+  return image.jpeg().toBuffer();
+}
+
+export interface WebpOptions {
+  width?: number;
+  height?: number;
+  alpha?: boolean;
+  orientation?: number;
+  lossless?: boolean;
+}
+
+async function createWebpBuffer(
+  options: WebpOptions = {},
+): Promise<Buffer> {
+  const width = options.width ?? 1;
+  const height = options.height ?? 1;
+  const alpha = options.alpha ?? true;
+  const background = alpha
+    ? { r: 0, g: 0, b: 255, alpha: 0 }
+    : { r: 0, g: 0, b: 255 };
+  let image = sharp({
+    create: {
+      width,
+      height,
+      channels: alpha ? 4 : 3,
+      background,
+    },
+  });
+
+  if (options.orientation !== undefined) {
+    image = image.withMetadata({ orientation: options.orientation });
+  }
+
+  return image.webp({ lossless: options.lossless ?? false }).toBuffer();
+}
+
+const defaultPng = await createPngBuffer();
+const defaultJpeg = await createJpegBuffer();
+const defaultWebp = await createWebpBuffer();
+
+export function makePngBuffer(): Buffer;
+export function makePngBuffer(options: PngOptions): Promise<Buffer>;
+export function makePngBuffer(
+  options?: PngOptions,
+): Buffer | Promise<Buffer> {
+  return options === undefined
+    ? defaultPng
+    : createPngBuffer(options);
+}
+
+export function makeJpegBuffer(): Buffer;
+export function makeJpegBuffer(options: JpegOptions): Promise<Buffer>;
+export function makeJpegBuffer(
+  options?: JpegOptions,
+): Buffer | Promise<Buffer> {
+  return options === undefined
+    ? defaultJpeg
+    : createJpegBuffer(options);
+}
+
+export function makeWebpBuffer(): Buffer;
+export function makeWebpBuffer(options: WebpOptions): Promise<Buffer>;
+export function makeWebpBuffer(
+  options?: WebpOptions,
+): Buffer | Promise<Buffer> {
+  return options === undefined
+    ? defaultWebp
+    : createWebpBuffer(options);
 }
 
 export function makeApiResponse(buffers: Buffer[]): {

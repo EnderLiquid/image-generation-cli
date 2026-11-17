@@ -5,7 +5,11 @@ import type {
 import type { RetryInfo } from "../api/client.js";
 import type { OutputDefaults } from "../config/schema.js";
 import { usageError } from "../errors.js";
-import { loadImageReference } from "../input/data-url.js";
+import {
+  loadImageReference,
+  type ImageReference,
+} from "../input/data-url.js";
+import type { ImageInfo } from "../input/image-info.js";
 import type { CommandResult } from "../output/result.js";
 import { runImageOperation } from "./common.js";
 
@@ -28,6 +32,23 @@ export interface EditCommandOptions {
   onRetry?: (info: RetryInfo) => void;
 }
 
+function assertSameSize(
+  label: string,
+  reference: ImageReference,
+  first: ImageInfo | undefined,
+): void {
+  const info = reference.info;
+
+  // info 的宽高已按 EXIF 方向校正；只对能读取元数据的本地图片预检。
+  if (!info || !first) return;
+
+  if (info.width !== first.width || info.height !== first.height) {
+    throw usageError(
+      `${label} 尺寸 ${info.width}x${info.height} 与第一张输入图 ${first.width}x${first.height} 不一致: ${reference.display}`,
+    );
+  }
+}
+
 export async function editCommand(
   options: EditCommandOptions,
 ): Promise<CommandResult> {
@@ -40,17 +61,25 @@ export async function editCommand(
   }
 
   const images: ImageInput[] = [];
+  let firstImageInfo: ImageInfo | undefined;
 
-  for (const value of options.images) {
+  for (const [index, value] of options.images.entries()) {
     const reference = await loadImageReference(value);
     images.push(reference.input);
+
+    if (index === 0) {
+      firstImageInfo = reference.info;
+    }
   }
 
   let mask: ImageInput | undefined;
   if (options.mask) {
     const reference = await loadImageReference(options.mask, {
       requirePng: true,
+      requireAlpha: true,
+      label: "mask",
     });
+    assertSameSize("mask", reference, firstImageInfo);
     mask = reference.input;
   }
 
@@ -58,7 +87,10 @@ export async function editCommand(
   if (options.markup) {
     const reference = await loadImageReference(options.markup, {
       requirePng: true,
+      requireAlpha: true,
+      label: "markup",
     });
+    assertSameSize("markup", reference, firstImageInfo);
     markup = reference.input;
   }
 

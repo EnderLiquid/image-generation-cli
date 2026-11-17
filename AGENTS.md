@@ -6,7 +6,7 @@
 
 - TypeScript ESM
 - Node.js 22+
-- commander、zod
+- commander、zod、sharp
 - tsup 构建
 - vitest 测试
 
@@ -27,7 +27,7 @@ npm run dev -- --help
 - `src/commands/`：generate、edit、config、init、doctor、skill path
 - `src/config/`：配置 schema、加载、合并、密钥和脱敏
 - `src/api/`：Image API 客户端
-- `src/input/`：data URL 与 MIME 识别
+- `src/input/`：data URL、MIME 与图片元数据识别
 - `src/output/`：命名、冲突检查和文件写入
 - `skills/image-generation/`：通用 skill
 - `docs/tasks/`：任务设计文档
@@ -35,6 +35,7 @@ npm run dev -- --help
 ## 约束
 
 - 当前支持 `generate` 和 JSON `edit`，输出格式为 png、webp、jpeg。
+- 本地 mask/markup 要求 PNG；CLI 预检透明像素和与第一张输入图的尺寸。
 - `apiUrl` 是基址，CLI 拼接 `/images/generations` 或 `/images/edits`。
 - 默认不重试。图片请求可能产生费用，错误默认交给调用者。
 - 配置位于 `~/.image-generation-cli`，密钥通过 `.env` 或进程环境变量提供。

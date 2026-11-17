@@ -90,25 +90,37 @@ image-generation edit \
 - 本地路径：png、jpeg、webp
 - `https://` URL
 
-mask 或 markup 二选一：
+`--image` 可重复 1 到 16 次，第一张是主图。mask 和 markup 都只作用于第一张图，且不能同时使用。
+
+mask 指定要编辑的区域：
 
 ```bash
 image-generation edit \
-  --prompt "把花瓶改成蓝色" \
+  --prompt "把透明区域的墙改成浅灰色，保留家具" \
+  --image ./room.png \
+  --mask ./mask.png
+```
+
+1. 以第一张输入图为基准，把要修改的区域清为全透明（alpha 为 0）。
+2. 其余区域保持不透明，保存为 PNG。
+3. 宽高必须与第一张图一致。
+
+透明区域表示要编辑的地方。模型把 mask 当作提示，可能不会严格遵循精确形状。
+
+markup 用标注指出要修改的位置：
+
+```bash
+image-generation edit \
+  --prompt "把圈出的花瓶改成蓝色，保留桌面" \
   --image ./kitchen.png \
   --markup ./overlay.png
 ```
 
-```bash
-image-generation edit \
-  --prompt "替换遮罩区域" \
-  --image ./input.png \
-  --mask ./mask.png
-```
+1. 新建与第一张图同宽高的透明 PNG，只在上面绘制圆圈、线条、框选等标注。
+2. 标注之外的区域保持透明，不要把标注层压平到原图。
+3. 标注层支持 GPT-Image-2.5 和 GPT-Image-2.6。
 
-- `--image` 可重复 1 到 16 次，第一张是主图。
-- `--mask` 和 `--markup` 不能同时使用。
-- 本地 mask 和 markup 必须是 PNG。
+两者都要求 PNG，宽高与第一张图一致。mask 需要 alpha 通道或 `tRNS`；markup 必须包含透明像素。使用 markup 时，第一张图和标注层各不超过 16,777,216 像素。每个 `image_url`（包括 mask 和 markup）都不超过 20,971,520 字符，本地单文件约 15MB；mask 和 markup 没有单独的大小限制。
 
 ## 输出
 

@@ -341,7 +341,7 @@ flowchart LR
 - 本地路径：读取字节，按魔数识别 MIME，转成 data URL
 - `http://` 或 `https://` URL：原样传给 `image_url`
 
-本地输入图片支持 png、jpeg、webp。本地 mask 和 markup 要求 PNG。尺寸、alpha 通道和格式一致性由 API 校验。
+本地输入图片支持 png、jpeg、webp。本地 mask 和 markup 要求 PNG；CLI 检查本地文件的透明像素和宽高，API 做最终校验。
 
 ### 6.5 输出位置与文件名
 
@@ -550,7 +550,7 @@ Authorization: Bearer <apiKey>
 - 单个 `image_url` 不超过 20,971,520 字符
 - 本地图片转 data URL 后计入该限制，单文件约 15MB 以内
 - 本地 mask/markup 要求 PNG
-- mask/markup 的尺寸、alpha 通道由 API 校验
+- CLI 对本地 mask/markup 检查透明像素和尺寸，API 做最终校验
 - 总请求体不包含任何流式字段
 
 ### 7.5 响应

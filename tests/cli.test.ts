@@ -85,6 +85,17 @@ describe("CLI 入口", () => {
     expect(result.stdout).toContain("config");
   });
 
+  it("edit --help 说明 mask 和 markup 约束", async () => {
+    const result = await runCli(["edit", "--help"]);
+
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain("--mask");
+    expect(result.stdout).toContain("--markup");
+    expect(result.stdout).toContain("PNG");
+    expect(result.stdout).toContain("第一张图");
+    expect(result.stdout).toContain("互斥");
+  });
+
   it("未知命令输出 JSON 错误", async () => {
     const result = await runCli(["unknown-command"]);
 
