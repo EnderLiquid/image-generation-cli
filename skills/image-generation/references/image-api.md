@@ -76,7 +76,7 @@ edits 使用 JSON，`images` 是 1 到 16 个输入对象的数组：
 }
 ```
 
-每个输入对象包含且只包含一种来源：
+每个输入对象使用 `image_url`，取值为 HTTPS URL 或 data URL：
 
 ```json
 { "image_url": "https://example.com/image.png" }
@@ -86,9 +86,7 @@ edits 使用 JSON，`images` 是 1 到 16 个输入对象的数组：
 { "image_url": "data:image/png;base64,<...>" }
 ```
 
-```json
-{ "file_id": "file-..." }
-```
+官方 JSON edits 也接受 Files API 的 `file_id`，本 CLI 只发送 `image_url`，不接受 `file-...` 输入。
 
 `mask` 和 `markup` 使用相同结构，二者不能同时出现。
 
@@ -227,7 +225,7 @@ CLI 保留：
 - Streaming 和 `partial_images`
 - Responses API
 - Multi-turn editing
-- Files API 上传
+- Files API 的 `file_id` 输入与上传
 - gif、svg
 - multipart edits
 - 自定义请求头

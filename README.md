@@ -203,7 +203,7 @@ npm run dev -- --help
 - gif、svg
 - Streaming 和 `partial_images`
 - Responses API 和 multi-turn editing
-- Files API 上传
+- Files API 的 `file_id` 输入与上传
 
 ## 文档
 

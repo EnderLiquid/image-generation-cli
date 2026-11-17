@@ -110,6 +110,23 @@ describe("CLI 入口", () => {
     expect(error.error.message).toMatch(/提示词/);
   });
 
+  it("edit 拒绝 Files API file_id", async () => {
+    const result = await runCli([
+      "edit",
+      "--image",
+      "file-abc123",
+      "--prompt",
+      "edit",
+    ]);
+
+    expect(result.code).toBe(2);
+    const error = parseError(result.stderr);
+    expect(error.error.kind).toBe("usage");
+    expect(error.error.message).toContain(
+      "不支持 Files API file_id",
+    );
+  });
+
   it("config 输出脱敏配置", async () => {
     const dir = await makeTempDir();
     const configPath = await writeTestConfig(dir, {

@@ -282,7 +282,7 @@ program
   .option("--prompt-file <path>", "从文件读取提示词")
   .option(
     "--image <value>",
-    "输入图片，可重复 1 到 16 次；支持路径、URL、file-... ID",
+    "输入图片，可重复 1 到 16 次；支持本地路径和 HTTPS URL",
     collect,
     [],
   )

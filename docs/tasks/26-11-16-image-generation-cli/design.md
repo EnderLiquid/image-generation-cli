@@ -341,7 +341,6 @@ flowchart LR
 
 - 本地路径：读取字节，按魔数识别 MIME，转成 data URL
 - `http://` 或 `https://` URL：原样传给 `image_url`
-- `file-...`：作为 `file_id` 传入
 
 本地输入图片支持 png、jpeg、webp。本地 mask 和 markup 要求 PNG。尺寸、alpha 通道和格式一致性由 API 校验。
 

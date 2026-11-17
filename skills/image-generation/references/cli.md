@@ -93,7 +93,6 @@ image-generation edit \
 
 - 本地路径：png、jpeg、webp
 - `https://` URL
-- `file-...` Files API ID
 
 ### mask 与 markup
 

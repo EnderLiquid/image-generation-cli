@@ -7,8 +7,7 @@ import type {
 } from "../types.js";
 
 export interface ImageInput {
-  image_url?: string;
-  file_id?: string;
+  image_url: string;
 }
 
 export interface ImageGenerationRequest {

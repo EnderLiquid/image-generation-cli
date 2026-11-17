@@ -233,13 +233,59 @@ describe("edit 命令", () => {
       expect(body.images?.[0]?.image_url).toMatch(
         /^data:image\/png;base64,/,
       );
+      expect(Object.keys(body.images?.[0] ?? {})).toEqual([
+        "image_url",
+      ]);
       expect(body.mask?.image_url).toMatch(
         /^data:image\/png;base64,/,
       );
+      expect(Object.keys(body.mask ?? {})).toEqual(["image_url"]);
       expect(body.markup).toBeUndefined();
       expect(
         server.requests[0]?.headers["content-type"],
       ).toBe("application/json");
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("markup 请求体只包含 image_url", async () => {
+    const dir = await makeTempDir();
+    const inputPath = path.join(dir, "input.png");
+    const markupPath = path.join(dir, "markup.png");
+    await writeFile(inputPath, makePngBuffer());
+    await writeFile(markupPath, makePngBuffer());
+
+    const server = await startMockServer(() => ({
+      body: makeApiResponse([makePngBuffer()]),
+    }));
+
+    try {
+      const configPath = await writeTestConfig(dir, {
+        apiUrl: `${server.baseUrl}/v1`,
+      });
+      await editCommand({
+        prompt: "edit",
+        images: [inputPath],
+        markup: markupPath,
+        configPath,
+        outDir: path.join(dir, "out"),
+        cwd: dir,
+        cliDefaults: {},
+      });
+
+      const body = server.requests[0]?.body as {
+        images?: Array<Record<string, unknown>>;
+        mask?: Record<string, unknown>;
+        markup?: Record<string, unknown>;
+      };
+      expect(Object.keys(body.images?.[0] ?? {})).toEqual([
+        "image_url",
+      ]);
+      expect(Object.keys(body.markup ?? {})).toEqual([
+        "image_url",
+      ]);
+      expect(body.mask).toBeUndefined();
     } finally {
       await server.close();
     }

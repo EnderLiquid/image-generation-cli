@@ -32,11 +32,9 @@ export async function loadImageReference(
   }
 
   if (value.startsWith("file-")) {
-    return {
-      input: { file_id: value },
-      rawBytes: 0,
-      display: value,
-    };
+    throw usageError(
+      "不支持 Files API file_id，请使用本地文件或 HTTPS URL",
+    );
   }
 
   if (isHttpUrl(value)) {

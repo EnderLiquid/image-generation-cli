@@ -1,6 +1,6 @@
 # 从 CLI 输入中移除 Files API file_id
 
-- 状态：调查完成，待实施
+- 状态：已实施
 - 日期：2026-11-17
 - 范围：`--image`、`--mask`、`--markup` 的输入解析、API 类型、测试、skill 与 README
 
