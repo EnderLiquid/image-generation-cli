@@ -1,6 +1,6 @@
 ---
 name: image-generation
-description: 通过 OpenAI Image API 兼容端点生成和编辑图片。用户要求创建图片、根据提示词出图、换背景、局部修改、添加或移除画面元素、使用参考图编辑时使用。
+description: 通过 OpenAI Image API 兼容端点生成和编辑图片。需要调用图片生成模型时使用。
 compatibility: 需要 Node.js 22+ 和可用的 image-generation CLI。
 ---
 
@@ -8,164 +8,81 @@ compatibility: 需要 Node.js 22+ 和可用的 image-generation CLI。
 
 使用 `image-generation` CLI 调用 OpenAI Image API。CLI 负责读取配置、构造请求、保存图片并输出 JSON 结果。
 
-## 配置
+## 使用须知
 
-默认配置目录：
+调用图片生成模型会产生真实 API 费用。使用前先确认预算和调用规模，包括张数、尺寸和质量档位。
 
-```text
-~/.image-generation-cli/
-├── config.json
-├── .env
-└── .env.example
-```
+不同 provider 和模型支持的参数不同。CLI 不按模型名拦截，字段是否可用以服务端支持情况为准。
 
-- `config.json` 保存 provider、model 和输出默认值。
-- `.env` 保存密钥，例如 `OPENAI_API_KEY=...`。
-- `config.json` 中的 `apiKey` 使用 `${OPENAI_API_KEY}` 引用。
-- 从配置文件所在目录加载 `.env`。进程环境变量优先。
-- `IMAGE_GENERATION_HOME` 可覆盖配置目录，`--config` 可覆盖配置文件。
+## 快速开始
 
-查看配置：
-
-```bash
-image-generation config
-image-generation config --effective
-image-generation config --effective --provider openai --model gpt-image-2.6-flare
-```
-
-`config` 会把 `apiKey` 显示为 `[REDACTED]`。不要尝试从配置或 `.env` 中回显真实密钥。
-
-检查环境：
-
-```bash
-image-generation doctor
-```
-
-`doctor` 不会调用图片 API，不产生费用。
-
-## 生成图片
-
-```bash
-image-generation generate --prompt "一只在雪地里提灯笼的猴子，剪纸风格"
-```
-
-常用参数：
+生成图片：
 
 ```bash
 image-generation generate \
-  --prompt-file prompt.txt \
-  --provider openai \
-  --model gpt-image-2.6-flare \
-  --n 2 \
-  --size 1536x1024 \
-  --quality high \
-  --output-format webp \
-  --out-dir ./generated
+  --prompt "一只在雪地里提灯笼的猴子，剪纸风格" \
+  --out-dir ./generated \
+  --name monkey-papercut
 ```
 
-- `--prompt`、`--prompt-file` 二选一；`--prompt -` 从 stdin 读取。
-- `--dry-run` 输出请求 URL 和脱敏后的请求体，不调用 API。
-- `--retries` 默认 0，失败不会自动重复请求。
-- 输出格式支持 `png`、`webp`、`jpeg`。
-
-## 编辑图片
+编辑图片：
 
 ```bash
 image-generation edit \
   --prompt "把背景换成雪山，保留人物和光线" \
-  --image ./input.png
+  --image ./input.png \
+  --out-dir ./generated \
+  --name snow-scene
 ```
 
-多张输入：
+查看配置和环境：
 
 ```bash
-image-generation edit \
-  --prompt "让第二张的配色接近第一张" \
-  --image ./reference.png \
-  --image ./target.jpg
+image-generation config --effective
+image-generation doctor
 ```
 
-`--image` 支持：
+`doctor` 不调用图片 API。默认配置目录为 `~/.image-generation-cli/`，可用 `IMAGE_GENERATION_HOME` 或 `--config` 覆盖。密钥写在 `apiKey` 中，可用 `${OPENAI_API_KEY}` 引用进程环境变量或配置目录下的 `.env`；`config` 会显示为 `[REDACTED]`。配置结构和合并规则见 `references/config.md`。
 
-- 本地路径：png、jpeg、webp
-- `https://` URL
+## 编辑方式
 
-`--image` 可重复 1 到 16 次，第一张是主图。mask 和 markup 都只作用于第一张图，且不能同时使用。
+| 场景 | 用法 |
+| --- | --- |
+| 整体改、换背景 | 一张 `--image` 加提示词 |
+| 多图融合、风格或人物参考 | 重复 `--image`，最多 16 张 |
+| 指定区域替换 | `--mask`，透明区域表示要改的地方 |
+| 圈选、标注位置 | `--markup`，在单独的透明 PNG 上画标注 |
 
-mask 指定要编辑的区域：
+mask 和 markup 只作用于第一张输入图，不作用于后续图片，两者不能同时使用。多图编辑时，在提示词里按序号说明每张图的角色。制作步骤、透明语义和输入限制见 `references/editing.md`。
 
-```bash
-image-generation edit \
-  --prompt "把透明区域的墙改成浅灰色，保留家具" \
-  --image ./room.png \
-  --mask ./mask.png
-```
+## 默认偏好
 
-1. 以第一张输入图为基准，把要修改的区域清为全透明（alpha 为 0）。
-2. 其余区域保持不透明，保存为 PNG。
-3. 宽高必须与第一张图一致。
+- 先用 `--n 1` 生成一张，检查满意就停止；需要更多再追加，避免为未使用的候选图付费。
+- 不主动调整 `--quality`、`--complexity`、`--output-format` 和 `--output-compression`。省略后使用配置或模型默认值。
+- 默认 PNG 是无损的；JPEG 不支持透明，WebP/JPEG 的压缩可能降低质量。没有下游格式要求时保持默认。默认效果不足时，再按 `references/prompting.md` 使用逃逸质量档位。
 
-透明区域表示要编辑的地方。模型把 mask 当作提示，可能不会严格遵循精确形状。
+## 提示词
 
-markup 用标注指出要修改的位置：
+编辑提示词采用“只改 X，保留 Y，不要 Z”的结构，一次只改一件事。生成图片时先写主体和用途，再写构图、材质、光线和限制。精确文字用引号写出原文，并说明位置和出现次数。
 
-```bash
-image-generation edit \
-  --prompt "把圈出的花瓶改成蓝色，保留桌面" \
-  --image ./kitchen.png \
-  --markup ./overlay.png
-```
+完整写法和示例见 `references/prompting.md`。
 
-1. 新建与第一张图同宽高的透明 PNG，只在上面绘制圆圈、线条、框选等标注。
-2. 标注之外的区域保持透明，不要把标注层压平到原图。
-3. 标注层支持 GPT-Image-2.5 和 GPT-Image-2.6。
+## 产物
 
-两者都要求 PNG，宽高与第一张图一致。mask 需要 alpha 通道或 `tRNS`；markup 必须包含透明像素。使用 markup 时，第一张图和标注层各不超过 16,777,216 像素。每个 `image_url`（包括 mask 和 markup）都不超过 20,971,520 字符，本地单文件约 15MB；mask 和 markup 没有单独的大小限制。
+- 默认输出到执行目录下的 `./generated`，文件名默认包含时间戳与随机后缀。推荐显式传 `--out-dir` 与 `--name`。
+- 目标文件已存在时默认报错，退出码 6；只有任务明确要求覆盖时才传 `--force`。
+- 生成后读取输出图片检查结果。确认文字可读、身份和产品细节保留、修改范围符合要求、透明背景确实透明等。
 
-## 输出
+## 失败处理
 
-默认输出目录：
-
-```text
-./generated
-```
-
-相对当前工作目录。目录不存在时自动创建。建议从用户项目目录执行，或显式传 `--out-dir`。
-
-默认文件名：
-
-```text
-image-YYYYMMDD-HHmmss-xxxx.<ext>
-```
-
-一次生成多张时追加 `-1` 到 `-n`：
-
-```text
-image-20261116-202555-3f9a-1.webp
-image-20261116-202555-3f9a-2.webp
-```
-
-`--name cat` 输出 `cat.png`；多张时输出 `cat-1.png`、`cat-2.png`。
-
-stdout 的 JSON 中 `files[].path` 是绝对路径，stderr 会输出：
-
-```text
-saved: D:\work\generated\image-20261116-202555-3f9a.webp
-```
-
-最终回复必须列出每个输出文件的绝对路径，不要只说“已生成”。
-
-目标文件已存在时默认报错，退出码 6。需要覆盖时传 `--force`。
-
-## 错误处理
-
-- 错误 JSON 输出到 stderr，stdout 为空。
-- 默认不重试。认证错误、400、moderation 拦截不要自动重复请求。
-- moderation 错误包含 `moderation_stage` 和 `categories`。
-- 退出码 2：参数或配置错误；3：认证失败；4：API 拒绝；5：网络或超时；6：写入失败或文件冲突；7：显式启用重试后仍失败。
+错误 JSON 输出到 stderr，stdout 为空。默认不重试，认证错误、400 和 moderation 拦截不要自动重复请求。输出冲突时不要自行加 `--force`。错误字段、退出码和重试规则见 `references/cli.md`。
 
 ## 参考
 
-- `references/config.md`：配置结构、合并规则、`.env` 和脱敏。
-- `references/cli.md`：命令、参数、输出和退出码。
-- `references/image-api.md`：请求体、edits 输入、限制和响应。
+| 文件 | 何时读取 |
+| --- | --- |
+| `references/cli.md` | 查命令、参数、输出命名、退出码和重试规则 |
+| `references/editing.md` | 准备多图输入、mask 或 markup |
+| `references/prompting.md` | 编写提示词、选择模型和参数、生成后检查 |
+| `references/config.md` | 配置 provider、模型、密钥或代理 |
+| `references/image-api.md` | 核对端点、请求体和响应结构 |

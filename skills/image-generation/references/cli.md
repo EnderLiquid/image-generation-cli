@@ -18,6 +18,8 @@ image-generation
 | `doctor` | 检查配置、密钥和路径 |
 | `skill path` | 输出打包内 skill 目录的绝对路径 |
 
+配置目录、字段和合并规则见 `config.md`。
+
 ## 提示词
 
 `generate` 和 `edit` 必须且只能提供一种提示词来源：
@@ -28,7 +30,7 @@ image-generation
 --prompt -
 ```
 
-`--prompt -` 从 stdin 读取。提示词长度不超过 32000 字符。
+`--prompt -` 从 stdin 读取。提示词长度不超过 32000 字符。提示词写法见 `prompting.md`。
 
 ## 公共参数
 
@@ -51,6 +53,35 @@ image-generation
 | `--retries <count>` | 可重试错误次数，默认 0 |
 | `--dry-run` | 只输出请求，不调用 API |
 | `--config <path>` | 配置文件路径 |
+
+### size
+
+`--size` 取 `auto` 或 `WIDTHxHEIGHT`，并满足：
+
+- 宽高为 16 的倍数。
+- 边长不超过 3840。
+- 宽高比不超过 3:1。
+- 总像素数在 655360 到 8294400 之间。
+
+示例：
+
+```text
+auto
+1024x1024
+1536x1024
+2048x2048
+3840x2160
+```
+
+### 输出格式
+
+| 格式 | 扩展名 | 说明 |
+| --- | --- | --- |
+| `png` | `.png` | 支持透明背景 |
+| `webp` | `.webp` | 支持透明背景和压缩 |
+| `jpeg` | `.jpg` | 支持压缩，不支持透明背景 |
+
+`--output-compression` 仅对 jpeg/webp 生效。`--background transparent` 仅支持 png/webp。
 
 ## generate
 
@@ -78,64 +109,9 @@ image-generation edit \
   --image ./input.png
 ```
 
-### 输入图片
+`--image` 可重复 1 到 16 次，支持本地 png、jpeg、webp 和 `https://` URL。
 
-`--image` 可重复 1 到 16 次：
-
-```bash
-image-generation edit \
-  --prompt "让第二张的配色接近第一张" \
-  --image ./reference.png \
-  --image ./target.jpg
-```
-
-取值支持：
-
-- 本地路径：png、jpeg、webp
-- `https://` URL
-
-### mask 与 markup
-
-mask 和 markup 都只作用于第一张输入图，且不能同时使用。提示词要说明要改什么、要保留什么。
-
-mask 指定要编辑的区域：
-
-```bash
-image-generation edit \
-  --prompt "把透明区域的墙改成浅灰色，保留家具" \
-  --image ./input.png \
-  --mask ./mask.png
-```
-
-1. 以第一张输入图为基准，把要修改的区域清为全透明（alpha 为 0）。
-2. 其余区域保持不透明，保存为 PNG。
-3. 宽高与第一张图一致，通过 `--mask` 传入。
-
-透明区域表示要编辑的地方。模型把 mask 当作提示，可能不会严格遵循精确形状。
-
-markup 用可视化标注指出要修改的位置：
-
-```bash
-image-generation edit \
-  --prompt "把圈出的花瓶改成蓝色，保留桌面" \
-  --image ./kitchen.png \
-  --markup ./overlay.png
-```
-
-1. 保留原图作为第一张输入图。
-2. 新建与第一张图同宽高的透明 PNG，只在上面绘制圆圈、线条、框选或其他标注。
-3. 保留透明像素，不要把标注层压平到原图，通过 `--markup` 传入。
-
-标注层支持 GPT-Image-2.5 和 GPT-Image-2.6。
-
-限制：
-
-- `--mask` 和 `--markup` 互斥。
-- 本地 mask 和 markup 必须是 PNG；mask 需要 alpha 通道或 `tRNS`，markup 必须包含透明像素。
-- 宽高必须与第一张图一致。
-- 使用 markup 时，第一张图和标注层各不超过 16,777,216 像素。
-- 每个 `image_url`（包括 mask 和 markup）都不超过 20,971,520 字符，本地单文件约 15MB；mask 和 markup 没有单独的大小限制。
-- CLI 在调用 API 前检查本地 mask/markup 的透明像素和尺寸；HTTPS URL 由 API 校验。
+`--mask` 和 `--markup` 只作用于第一张输入图，两者不能同时使用。制作步骤、透明语义和输入限制见 `editing.md`。多图编辑的提示词写法见 `prompting.md`。
 
 ## 输出
 
@@ -144,6 +120,8 @@ image-generation edit \
 ```text
 ./generated
 ```
+
+相对当前工作目录。目录不存在时自动创建。
 
 默认文件名：
 
@@ -158,12 +136,7 @@ image-20261116-202555-3f9a-1.png
 image-20261116-202555-3f9a-2.png
 ```
 
-`--name cat`：
-
-- 单张：`cat.png`
-- 多张：`cat-1.png`、`cat-2.png`
-
-`--name` 中的已知图片扩展名会被去掉，最终扩展名由实际输出格式决定。
+`--name cat` 输出 `cat.png`；多张时输出 `cat-1.png`、`cat-2.png`。`--name` 中的已知图片扩展名会被去掉，最终扩展名由实际输出格式决定。名称不能包含路径分隔符或 Windows 保留字符。
 
 目标文件已存在时默认报错，退出码 6。传 `--force` 才覆盖。
 

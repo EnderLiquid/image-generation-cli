@@ -210,6 +210,9 @@ npm run dev -- --help
 
 ## 文档
 
-- skill 配置：`skills/image-generation/references/config.md`
-- skill CLI：`skills/image-generation/references/cli.md`
+- skill 入口：`skills/image-generation/SKILL.md`
+- 命令与参数：`skills/image-generation/references/cli.md`
+- 编辑输入：`skills/image-generation/references/editing.md`
+- 提示词：`skills/image-generation/references/prompting.md`
+- 配置：`skills/image-generation/references/config.md`
 - API 协议：`skills/image-generation/references/image-api.md`

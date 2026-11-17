@@ -22,6 +22,8 @@ Windows 下 `~` 为 `%USERPROFILE%`。
 
 ## 示例
 
+示例中的模型名按实际 provider 替换。示例中的 `quality` 用于演示层级覆盖，实际使用可以省略。
+
 ```json
 {
   "defaultProvider": "openai",
@@ -43,9 +45,7 @@ Windows 下 `~` 为 `%USERPROFILE%`。
       "models": {
         "gpt-image-2.6-flare": {
           "defaults": {
-            "size": "1536x1024",
-            "output_format": "webp",
-            "output_compression": 90
+            "size": "1536x1024"
           }
         },
         "gpt-image-2.6-sunburst": {
@@ -79,20 +79,20 @@ OPENAI_API_KEY=
 | `provider.models` | 是 | 模型映射，至少一个 |
 | `model.defaults` | 否 | model 级输出默认值 |
 
-`defaults` 字段：
+未知字段会被拒绝。
+
+## 输出默认值
 
 | 字段 | 取值 | API 默认 | 说明 |
 | --- | --- | --- | --- |
 | `n` | 1 至 10 | 1 | 生成张数 |
-| `size` | `auto` 或 `WIDTHxHEIGHT` | `auto` | 宽高需为 16 的倍数 |
-| `quality` | `low` `medium` `high` `xhigh` `max` `auto` | `auto` | `xhigh`/`max` 仅 2.5/2.6 |
+| `size` | `auto` 或 `WIDTHxHEIGHT` | `auto` | 合法区间见 `cli.md` 的 `size` |
+| `quality` | `low` `medium` `high` `xhigh` `max` `auto` | `auto` | `xhigh`/`max` 需要模型支持 |
 | `background` | `transparent` `opaque` `auto` | `auto` | `transparent` 仅 png/webp |
-| `output_format` | `png` `webp` `jpeg` | `png` | 当前支持三种 |
+| `output_format` | `png` `webp` `jpeg` | `png` | 输出格式 |
 | `output_compression` | 0 至 100 整数 | 100 | 仅 jpeg/webp |
 | `moderation` | `auto` `low` | `auto` | |
-| `complexity` | `low` `medium` `high` | 模型默认 | 2.5/2.6 省略时为 `high` |
-
-未知字段会被拒绝。
+| `complexity` | `low` `medium` `high` | 模型默认 | 省略时不发送，由模型决定 |
 
 ## 合并
 
@@ -129,25 +129,6 @@ flowchart LR
 ```
 
 `proxy` 的生效值包含 `quality: high`，不包含 `output_format`。
-
-## 尺寸
-
-`size` 必须是 `auto` 或 `WIDTHxHEIGHT`，并满足：
-
-- 宽高为 16 的倍数
-- 边长不超过 3840
-- 宽高比不超过 3:1
-- 总像素数在 655360 到 8294400 之间
-
-示例：
-
-```text
-auto
-1024x1024
-1536x1024
-2048x2048
-3840x2160
-```
 
 ## 密钥
 
@@ -201,15 +182,13 @@ OPENAI_API_KEY=sk-...
     "n": 1,
     "size": "1536x1024",
     "quality": "high",
-    "output_format": "webp",
-    "output_compression": 90
+    "output_format": "png"
   },
   "sources": {
     "n": "global",
     "size": "model",
     "quality": "provider",
-    "output_format": "model",
-    "output_compression": "model"
+    "output_format": "global"
   }
 }
 ```
