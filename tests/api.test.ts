@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildEndpointUrl,
   callImageApi,
-  decodeImageData,
+  decodeImageOutputs,
 } from "../src/api/client.js";
 import { AppError } from "../src/errors.js";
 import {
@@ -61,7 +61,10 @@ describe("API 客户端", () => {
         model: "test-model",
         prompt: "test",
       });
-      expect(decodeImageData(result.response)[0]).toEqual(image);
+      expect(decodeImageOutputs(result.response)[0]).toEqual({
+        kind: "image",
+        data: image,
+      });
     } finally {
       await server.close();
     }
@@ -239,11 +242,51 @@ describe("API 客户端", () => {
     }
   });
 
-  it("拒绝缺少 b64_json 的响应", () => {
-    expect(() =>
-      decodeImageData({
+  it("接受 url 响应", () => {
+    expect(
+      decodeImageOutputs({
         data: [{ url: "https://example.com/image.png" }],
       }),
-    ).toThrow(/b64_json/);
+    ).toEqual([
+      {
+        kind: "url",
+        url: "https://example.com/image.png",
+      },
+    ]);
+  });
+
+  it("同时包含 b64_json 和 url 时优先 b64_json", () => {
+    const image = makePngBuffer();
+
+    expect(
+      decodeImageOutputs({
+        data: [
+          {
+            b64_json: image.toString("base64"),
+            url: "https://example.com/image.png",
+          },
+        ],
+      }),
+    ).toEqual([{ kind: "image", data: image }]);
+  });
+
+  it("拒绝既没有 b64_json 也没有 url 的响应", () => {
+    expect(() =>
+      decodeImageOutputs({ data: [{}] }),
+    ).toThrow(/b64_json 或 url/);
+  });
+
+  it("拒绝非 http(s) 的图片 url", () => {
+    expect(() =>
+      decodeImageOutputs({
+        data: [{ url: "file:///tmp/image.png" }],
+      }),
+    ).toThrow(/http\(s\)/);
+  });
+
+  it("拒绝无效的图片 url", () => {
+    expect(() =>
+      decodeImageOutputs({ data: [{ url: "http://[" }] }),
+    ).toThrow(/url 无效/);
   });
 });

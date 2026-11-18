@@ -135,7 +135,7 @@ image-20261116-202555-3f9a-1.png
 image-20261116-202555-3f9a-2.png
 ```
 
-`--name cat` 输出 `cat.png`；多张时输出 `cat-1.png`、`cat-2.png`。
+`--name cat` 输出 `cat.png`；多张时输出 `cat-1.png`、`cat-2.png`。响应中的 `url` 会写成 `.txt` 文件，内容为一行 URL；CLI 不下载 URL 内容。
 
 stdout 输出 JSON，文件路径为绝对路径。
 

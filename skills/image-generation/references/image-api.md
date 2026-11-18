@@ -87,7 +87,7 @@ mask 和 markup 的语义、制作步骤和输入限制见 `editing.md`。
 
 ## 响应
 
-成功响应必须包含 `data[].b64_json`：
+成功响应包含 `data[].b64_json` 或 `data[].url`：
 
 ```json
 {
@@ -96,6 +96,9 @@ mask 和 markup 的语义、制作步骤和输入限制见 `editing.md`。
     {
       "b64_json": "<base64>",
       "revised_prompt": "..."
+    },
+    {
+      "url": "https://example.com/image.png"
     }
   ],
   "usage": {
@@ -106,7 +109,7 @@ mask 和 markup 的语义、制作步骤和输入限制见 `editing.md`。
 }
 ```
 
-CLI 解码 `b64_json`，按实际图片格式写入文件。响应缺少 `b64_json` 时报错。`created`、`usage`、`svg_usage` 和 request ID 会保留在 CLI 的输出 JSON 中。
+CLI 优先解码 `b64_json`，按实际图片格式写入文件；缺少 `b64_json` 时取 `url`，将 URL 写入 `.txt` 文件，不下载内容。`url` 必须是 http/https 地址，否则按 API 响应错误处理。`created`、`usage`、`svg_usage` 和 request ID 会保留在 CLI 的输出 JSON 中。
 
 ## 错误
 

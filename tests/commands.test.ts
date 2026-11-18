@@ -76,6 +76,92 @@ describe("generate 命令", () => {
     }
   });
 
+  it("将 url 响应写为 txt", async () => {
+    const dir = await makeTempDir();
+    const url = "https://example.com/image.png";
+    const server = await startMockServer(() => ({
+      body: {
+        created: 1_763_223_555,
+        data: [{ url }],
+      },
+    }));
+
+    try {
+      const configPath = await writeTestConfig(dir, {
+        apiUrl: `${server.baseUrl}/v1`,
+      });
+      const outDir = path.join(dir, "out");
+      const result = await generateCommand({
+        prompt: "一只猴子",
+        configPath,
+        outDir,
+        cwd: dir,
+        name: "cat.txt",
+        cliDefaults: {},
+      });
+
+      if ("dryRun" in result) throw new Error("unexpected dry run");
+
+      expect(result.files).toHaveLength(1);
+      expect(result.files[0]).toMatchObject({ kind: "url" });
+      expect(path.basename(result.files[0]!.path)).toBe("cat.txt");
+      expect(path.extname(result.files[0]!.path)).toBe(".txt");
+      expect(
+        await readFile(result.files[0]!.path, "utf8"),
+      ).toBe(`${url}\n`);
+      expect(server.requests).toHaveLength(1);
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("混合图片与 url 时按响应顺序命名", async () => {
+    const dir = await makeTempDir();
+    const image = makePngBuffer();
+    const url = "https://example.com/image.png";
+    const server = await startMockServer(() => ({
+      body: {
+        created: 1_763_223_555,
+        data: [
+          { b64_json: image.toString("base64") },
+          { url },
+        ],
+      },
+    }));
+
+    try {
+      const configPath = await writeTestConfig(dir, {
+        apiUrl: `${server.baseUrl}/v1`,
+      });
+      const outDir = path.join(dir, "out");
+      const result = await generateCommand({
+        prompt: "两张图",
+        configPath,
+        outDir,
+        cwd: dir,
+        cliDefaults: { n: 2, output_format: "png" },
+      });
+
+      if ("dryRun" in result) throw new Error("unexpected dry run");
+
+      expect(
+        result.files.map((file) => ({
+          kind: file.kind,
+          extension: path.extname(file.path),
+        })),
+      ).toEqual([
+        { kind: "image", extension: ".png" },
+        { kind: "url", extension: ".txt" },
+      ]);
+      expect(await readFile(result.files[0]!.path)).toEqual(image);
+      expect(
+        await readFile(result.files[1]!.path, "utf8"),
+      ).toBe(`${url}\n`);
+    } finally {
+      await server.close();
+    }
+  });
+
   it("按 n 写出多个带序号的文件", async () => {
     const dir = await makeTempDir();
     const images = [

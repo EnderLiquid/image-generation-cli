@@ -136,7 +136,7 @@ image-20261116-202555-3f9a-1.png
 image-20261116-202555-3f9a-2.png
 ```
 
-`--name cat` 输出 `cat.png`；多张时输出 `cat-1.png`、`cat-2.png`。`--name` 中的已知图片扩展名会被去掉，最终扩展名由实际输出格式决定。名称不能包含路径分隔符或 Windows 保留字符。
+`--name cat` 输出 `cat.png`；多张时输出 `cat-1.png`、`cat-2.png`。响应中的 `url` 会写成同名的 `.txt` 文件，内容为一行 URL 加换行；CLI 不下载 URL 内容。`--name` 中的已知扩展名会被去掉，最终扩展名由实际产物决定。名称不能包含路径分隔符或 Windows 保留字符。
 
 目标文件已存在时默认报错，退出码 6。传 `--force` 才覆盖。
 
@@ -152,6 +152,7 @@ stdout 输出结果 JSON，文件路径为绝对路径。
   "model": "gpt-image-2.6-flare",
   "files": [
     {
+      "kind": "image",
       "path": "D:/work/generated/image-20261116-202555-3f9a.webp",
       "bytes": 284512,
       "format": "webp"
@@ -175,6 +176,16 @@ stdout 输出结果 JSON，文件路径为绝对路径。
 ```
 
 `operation` 为 `generate` 或 `edit`。edits 的 `request` 只包含输入数量、mask/markup 标记和输出参数，不包含图片数据。
+
+`files[].kind` 为 `image` 或 `url`。`url` 产物没有 `format` 字段，`path` 指向包含 URL 的 `.txt`：
+
+```json
+{
+  "kind": "url",
+  "path": "D:/work/generated/image-20261116-202555-3f9a-2.txt",
+  "bytes": 96
+}
+```
 
 ## dry-run
 

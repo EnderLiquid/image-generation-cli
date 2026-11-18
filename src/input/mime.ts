@@ -45,7 +45,3 @@ export function mimeForFormat(format: ImageFormat): string {
       return "image/webp";
   }
 }
-
-export function extensionForFormat(format: ImageFormat): string {
-  return format === "jpeg" ? "jpg" : format;
-}

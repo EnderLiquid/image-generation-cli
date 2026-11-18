@@ -1,6 +1,11 @@
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
-import { callImageApi, buildEndpointUrl, decodeImageData, type RetryInfo } from "../api/client.js";
+import {
+  callImageApi,
+  buildEndpointUrl,
+  decodeImageOutputs,
+  type RetryInfo,
+} from "../api/client.js";
 import type {
   ImageEditRequest,
   ImageGenerationRequest,
@@ -25,7 +30,8 @@ import {
   assertPathsAvailable,
   createNamingSeed,
   createOutputPaths,
-  writeImageFiles,
+  writeOutputFiles,
+  type OutputExtension,
 } from "../output/files.js";
 import type {
   CommandResult,
@@ -101,14 +107,15 @@ export async function runImageOperation(
     options.outDir ?? "generated",
   );
   const seed = createNamingSeed();
+  const plannedExtensions: OutputExtension[] = Array.from(
+    { length: plannedCount },
+    () => plannedFormat,
+  );
 
   const plannedPaths = createOutputPaths({
     outDir,
     name: options.name,
-    formats: Array.from(
-      { length: plannedCount },
-      () => plannedFormat,
-    ),
+    extensions: plannedExtensions,
     seed,
   });
 
@@ -154,29 +161,53 @@ export async function runImageOperation(
     onRetry: options.onRetry,
   });
 
-  const buffers = decodeImageData(call.response);
   const fallbackFormat = isImageFormat(call.response.output_format)
     ? call.response.output_format
     : plannedFormat;
-  const formats = buffers.map(
-    (buffer) => detectImageFormat(buffer) ?? fallbackFormat,
-  );
+  const decoded = decodeImageOutputs(call.response).map((output) => {
+    if (output.kind === "image") {
+      const format = detectImageFormat(output.data) ?? fallbackFormat;
+      return {
+        kind: "image" as const,
+        data: output.data,
+        format,
+        extension: format,
+      };
+    }
+
+    return {
+      kind: "url" as const,
+      data: Buffer.from(`${output.url}\n`, "utf8"),
+      extension: "txt" as const,
+    };
+  });
 
   const actualPaths = createOutputPaths({
     outDir,
     name: options.name,
-    formats,
+    extensions: decoded.map((output) => output.extension),
     seed,
   });
 
   await assertPathsAvailable(actualPaths, force);
 
-  const files = await writeImageFiles(
-    buffers.map((data, index) => ({
-      path: actualPaths[index]!,
-      data,
-      format: formats[index]!,
-    })),
+  const files = await writeOutputFiles(
+    decoded.map((output, index) => {
+      if (output.kind === "image") {
+        return {
+          kind: "image" as const,
+          path: actualPaths[index]!,
+          data: output.data,
+          format: output.format,
+        };
+      }
+
+      return {
+        kind: "url" as const,
+        path: actualPaths[index]!,
+        data: output.data,
+      };
+    }),
     { force },
   );
 

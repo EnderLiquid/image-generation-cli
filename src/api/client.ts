@@ -134,19 +134,22 @@ function parseSuccessResponse(
   }
 
   for (const [index, item] of data.entries()) {
-    if (
-      !isRecord(item) ||
-      typeof item.b64_json !== "string" ||
-      item.b64_json.length === 0
-    ) {
+    if (!isRecord(item) || !hasImageSource(item)) {
       throw apiFailure(
-        `API 响应中第 ${index + 1} 张图片缺少 b64_json`,
+        `API 响应中第 ${index + 1} 张图片缺少 b64_json 或 url`,
         { requestId },
       );
     }
   }
 
   return json as ImageApiResponse;
+}
+
+function hasImageSource(item: Record<string, unknown>): boolean {
+  return (
+    (typeof item.b64_json === "string" && item.b64_json.length > 0) ||
+    (typeof item.url === "string" && item.url.length > 0)
+  );
 }
 
 function getRequestId(headers: Headers): string | undefined {
@@ -308,27 +311,65 @@ export async function callImageApi(
   }
 }
 
-export function decodeImageData(response: ImageApiResponse): Buffer[] {
+export type ImageOutput =
+  | { kind: "image"; data: Buffer }
+  | { kind: "url"; url: string };
+
+function normalizeImageUrl(value: string, index: number): string {
+  const url = value.trim();
+
+  if (!url || /[\r\n]/.test(url)) {
+    throw apiFailure(`API 响应中第 ${index + 1} 张图片的 url 无效`);
+  }
+
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw apiFailure(`API 响应中第 ${index + 1} 张图片的 url 无效`);
+  }
+
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    throw apiFailure(
+      `API 响应中第 ${index + 1} 张图片的 url 不是 http(s) 地址`,
+    );
+  }
+
+  return url;
+}
+
+export function decodeImageOutputs(
+  response: ImageApiResponse,
+): ImageOutput[] {
   const data = response.data;
 
   if (!Array.isArray(data) || data.length === 0) {
     throw apiFailure("API 响应中没有 data");
   }
 
-  return data.map((item: ImageApiResponseData, index) => {
-    if (typeof item.b64_json !== "string" || item.b64_json.length === 0) {
-      throw apiFailure(
-        `API 响应中第 ${index + 1} 张图片缺少 b64_json`,
-      );
-    }
+  return data.map(
+    (item: ImageApiResponseData, index): ImageOutput => {
+      if (typeof item.b64_json === "string" && item.b64_json.length > 0) {
+        const buffer = Buffer.from(item.b64_json, "base64");
+        if (buffer.length === 0) {
+          throw apiFailure(
+            `API 响应中第 ${index + 1} 张图片的 b64_json 无法解码`,
+          );
+        }
 
-    const buffer = Buffer.from(item.b64_json, "base64");
-    if (buffer.length === 0) {
-      throw apiFailure(
-        `API 响应中第 ${index + 1} 张图片的 b64_json 无法解码`,
-      );
-    }
+        return { kind: "image", data: buffer };
+      }
 
-    return buffer;
-  });
+      if (typeof item.url === "string" && item.url.length > 0) {
+        return {
+          kind: "url",
+          url: normalizeImageUrl(item.url, index),
+        };
+      }
+
+      throw apiFailure(
+        `API 响应中第 ${index + 1} 张图片缺少 b64_json 或 url`,
+      );
+    },
+  );
 }

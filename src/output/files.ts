@@ -9,27 +9,35 @@ import {
 import path from "node:path";
 import type { ImageFormat } from "../types.js";
 import { ioError, isAppError, usageError } from "../errors.js";
-import { extensionForFormat } from "../input/mime.js";
 
 export interface NamingSeed {
   now: Date;
   random: string;
 }
 
-export interface OutputFile {
-  path: string;
-  bytes: number;
-  format: ImageFormat;
-}
+export type OutputExtension = ImageFormat | "txt";
+
+export type OutputFile =
+  | {
+      kind: "image";
+      path: string;
+      bytes: number;
+      format: ImageFormat;
+    }
+  | {
+      kind: "url";
+      path: string;
+      bytes: number;
+    };
 
 export interface CreateOutputPathsOptions {
   outDir: string;
   name?: string;
-  formats: ImageFormat[];
+  extensions: OutputExtension[];
   seed: NamingSeed;
 }
 
-const IMAGE_EXTENSION = /\.(?:png|jpe?g|webp)$/i;
+const KNOWN_EXTENSION = /\.(?:png|jpe?g|webp|txt)$/i;
 const RESERVED_WINDOWS_NAMES =
   /^(?:CON|PRN|AUX|NUL|CLOCK\$|COM[1-9]|LPT[1-9])(?:\..*)?$/i;
 
@@ -57,7 +65,7 @@ export function formatLocalTimestamp(date: Date): string {
 }
 
 export function sanitizeBaseName(name: string): string {
-  let base = name.trim().replace(IMAGE_EXTENSION, "");
+  let base = name.trim().replace(KNOWN_EXTENSION, "");
 
   if (!base) {
     throw usageError("--name 不能为空");
@@ -82,11 +90,15 @@ export function sanitizeBaseName(name: string): string {
   return base;
 }
 
+function extensionForOutput(extension: OutputExtension): string {
+  return extension === "jpeg" ? "jpg" : extension;
+}
+
 export function createOutputPaths(
   options: CreateOutputPathsOptions,
 ): string[] {
-  if (options.formats.length === 0) {
-    throw usageError("输出格式不能为空");
+  if (options.extensions.length === 0) {
+    throw usageError("输出扩展名不能为空");
   }
 
   const outDir = path.resolve(options.outDir);
@@ -94,11 +106,11 @@ export function createOutputPaths(
     ? sanitizeBaseName(options.name)
     : `image-${formatLocalTimestamp(options.seed.now)}-${options.seed.random}`;
 
-  return options.formats.map((format, index) => {
-    const suffix = options.formats.length > 1 ? `-${index + 1}` : "";
+  return options.extensions.map((extension, index) => {
+    const suffix = options.extensions.length > 1 ? `-${index + 1}` : "";
     return path.join(
       outDir,
-      `${base}${suffix}.${extensionForFormat(format)}`,
+      `${base}${suffix}.${extensionForOutput(extension)}`,
     );
   });
 }
@@ -144,20 +156,27 @@ export async function assertPathsAvailable(
   }
 }
 
-export interface WriteImageOptions {
+export interface WriteOutputOptions {
   force: boolean;
   onSaved?: (file: OutputFile) => void;
 }
 
-export interface ImageWriteItem {
-  path: string;
-  data: Buffer;
-  format: ImageFormat;
-}
+export type OutputWriteItem =
+  | {
+      kind: "image";
+      path: string;
+      data: Buffer;
+      format: ImageFormat;
+    }
+  | {
+      kind: "url";
+      path: string;
+      data: Buffer;
+    };
 
-export async function writeImageFiles(
-  items: ImageWriteItem[],
-  options: WriteImageOptions,
+export async function writeOutputFiles(
+  items: OutputWriteItem[],
+  options: WriteOutputOptions,
 ): Promise<OutputFile[]> {
   const written: OutputFile[] = [];
 
@@ -205,11 +224,19 @@ export async function writeImageFiles(
       );
     }
 
-    const file: OutputFile = {
-      path: target,
-      bytes: item.data.length,
-      format: item.format,
-    };
+    const file: OutputFile =
+      item.kind === "image"
+        ? {
+            kind: "image",
+            path: target,
+            bytes: item.data.length,
+            format: item.format,
+          }
+        : {
+            kind: "url",
+            path: target,
+            bytes: item.data.length,
+          };
 
     written.push(file);
     options.onSaved?.(file);
