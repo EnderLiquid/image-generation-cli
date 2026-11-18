@@ -58,7 +58,7 @@ mask 和 markup 只作用于第一张输入图，不作用于后续图片，两�
 ## 默认偏好
 
 - 先用 `--n 1` 生成一张，检查满意就停止；需要更多再追加，避免为未使用的候选图付费。
-- 不主动调整 `--quality`、`--complexity`、`--output-format` 和 `--output-compression`。省略后使用配置或模型默认值。
+- 不主动调整 `--quality`、`--complexity`、`--output-format`、`--output-compression` 和 `--response-format`。省略后使用配置或模型默认值；`--response-format` 默认不发送，只在中转明确要求时设置。
 - 默认 PNG 是无损的；JPEG 不支持透明，WebP/JPEG 的压缩可能降低质量。没有下游格式要求时保持默认。默认效果不足时，再按 `references/prompting.md` 使用逃逸质量档位。
 
 ## 提示词

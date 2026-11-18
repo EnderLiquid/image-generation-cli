@@ -71,6 +71,9 @@ describe("generate 命令", () => {
         prompt: "一只猴子",
         output_format: "png",
       });
+      expect(server.requests[0]?.body).not.toHaveProperty(
+        "response_format",
+      );
     } finally {
       await server.close();
     }
@@ -97,13 +100,16 @@ describe("generate 命令", () => {
         outDir,
         cwd: dir,
         name: "cat.txt",
-        cliDefaults: {},
+        cliDefaults: { response_format: "url" },
       });
 
       if ("dryRun" in result) throw new Error("unexpected dry run");
 
       expect(result.files).toHaveLength(1);
       expect(result.files[0]).toMatchObject({ kind: "url" });
+      expect(server.requests[0]?.body).toMatchObject({
+        response_format: "url",
+      });
       expect(path.basename(result.files[0]!.path)).toBe("cat.txt");
       expect(path.extname(result.files[0]!.path)).toBe(".txt");
       expect(
@@ -160,6 +166,33 @@ describe("generate 命令", () => {
     } finally {
       await server.close();
     }
+  });
+
+  it("response_format=url 时 dry-run 计划 txt", async () => {
+    const dir = await makeTempDir();
+    const configPath = await writeTestConfig(dir, {
+      apiUrl: "https://example.com/v1",
+    });
+
+    const result = await generateCommand({
+      prompt: "url",
+      configPath,
+      outDir: path.join(dir, "out"),
+      cwd: dir,
+      dryRun: true,
+      cliDefaults: { n: 2, response_format: "url" },
+    });
+
+    if (!("dryRun" in result)) {
+      throw new Error("expected dry run");
+    }
+
+    expect(result.request).toMatchObject({
+      response_format: "url",
+    });
+    expect(
+      result.output.files.map((file) => path.extname(file)),
+    ).toEqual([".txt", ".txt"]);
   });
 
   it("按 n 写出多个带序号的文件", async () => {

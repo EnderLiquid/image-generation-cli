@@ -92,6 +92,7 @@ function buildCliDefaults(
     ["background", options.background],
     ["output_format", options.outputFormat],
     ["output_compression", options.outputCompression],
+    ["response_format", options.responseFormat],
     ["moderation", options.moderation],
     ["complexity", options.complexity],
   ];
@@ -219,6 +220,10 @@ program
   .option("--moderation <level>", "auto/low")
   .option("--complexity <level>", "low/medium/high")
   .option(
+    "--response-format <format>",
+    "url/b64_json；兼容中转，默认省略",
+  )
+  .option(
     "--timeout <seconds>",
     "请求超时秒数",
     parsePositiveInteger,
@@ -288,6 +293,10 @@ program
   )
   .option("--moderation <level>", "auto/low")
   .option("--complexity <level>", "low/medium/high")
+  .option(
+    "--response-format <format>",
+    "url/b64_json；兼容中转，默认省略",
+  )
   .option(
     "--timeout <seconds>",
     "请求超时秒数",

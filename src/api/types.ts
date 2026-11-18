@@ -4,6 +4,7 @@ import type {
   ImageFormat,
   ImageModeration,
   ImageQuality,
+  ImageResponseFormat,
 } from "../types.js";
 
 export interface ImageInput {
@@ -19,6 +20,7 @@ export interface ImageGenerationRequest {
   background?: ImageBackground;
   output_format?: ImageFormat;
   output_compression?: number;
+  response_format?: ImageResponseFormat;
   moderation?: ImageModeration;
   complexity?: ImageComplexity;
 }

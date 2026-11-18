@@ -94,6 +94,7 @@ describe("CLI 入口", () => {
     expect(result.stdout).toContain("PNG");
     expect(result.stdout).toContain("第一张图");
     expect(result.stdout).toContain("互斥");
+    expect(result.stdout).toContain("--response-format");
   });
 
   it("未知命令输出 JSON 错误", async () => {

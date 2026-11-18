@@ -64,6 +64,17 @@ describe("配置解析", () => {
     ).toBe("high");
   });
 
+  it("解析 response_format 默认值", () => {
+    const raw = validConfig() as {
+      defaults: Record<string, unknown>;
+    };
+    raw.defaults.response_format = "url";
+
+    expect(
+      parseConfig(raw).defaults?.response_format,
+    ).toBe("url");
+  });
+
   it("拒绝未知字段", () => {
     const raw = validConfig() as Record<string, unknown>;
     raw.extra = true;

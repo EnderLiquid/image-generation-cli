@@ -75,6 +75,7 @@ OPENAI_API_KEY=
 | `background` | `transparent` `opaque` `auto` | `auto` | `transparent` 仅 png/webp |
 | `output_format` | `png` `webp` `jpeg` | `png` | 输出格式 |
 | `output_compression` | 0 至 100 整数 | 100 | 仅 jpeg/webp |
+| `response_format` | `url` `b64_json` | 省略 | 兼容中转；OpenAI 已废弃，默认不发送 |
 | `moderation` | `auto` `low` | `auto` | |
 | `complexity` | `low` `medium` `high` | 模型默认 | 省略时不发送，由模型决定 |
 

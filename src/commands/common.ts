@@ -102,6 +102,8 @@ export async function runImageOperation(
 
   const plannedCount = values.n ?? 1;
   const plannedFormat = values.output_format ?? "png";
+  const plannedExtension: OutputExtension =
+    values.response_format === "url" ? "txt" : plannedFormat;
   const outDir = path.resolve(
     options.cwd ?? process.cwd(),
     options.outDir ?? "generated",
@@ -109,7 +111,7 @@ export async function runImageOperation(
   const seed = createNamingSeed();
   const plannedExtensions: OutputExtension[] = Array.from(
     { length: plannedCount },
-    () => plannedFormat,
+    () => plannedExtension,
   );
 
   const plannedPaths = createOutputPaths({

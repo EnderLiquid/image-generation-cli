@@ -47,12 +47,15 @@ image-generation
 | `--background <background>` | `transparent` `opaque` `auto` |
 | `--output-format <format>` | `png` `webp` `jpeg` |
 | `--output-compression <number>` | 0 到 100，仅 jpeg/webp |
+| `--response-format <format>` | `url` `b64_json`；兼容中转，默认省略 |
 | `--moderation <level>` | `auto` `low` |
 | `--complexity <level>` | `low` `medium` `high` |
 | `--timeout <seconds>` | 单次请求超时，默认 180 |
 | `--retries <count>` | 可重试错误次数，默认 0 |
 | `--dry-run` | 只输出请求，不调用 API |
 | `--config <path>` | 配置文件路径 |
+
+`--response-format` 控制响应载体，`--output-format` 控制图片编码。OpenAI 已标记 `response_format` 废弃，默认不发送；只在中转要求时设置。实际响应可能仍与请求不同，CLI 按 `data` 内容处理。
 
 ### size
 

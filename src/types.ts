@@ -27,6 +27,10 @@ export type ImageModeration = (typeof IMAGE_MODERATIONS)[number];
 export const IMAGE_COMPLEXITIES = ["low", "medium", "high"] as const;
 export type ImageComplexity = (typeof IMAGE_COMPLEXITIES)[number];
 
+export const IMAGE_RESPONSE_FORMATS = ["url", "b64_json"] as const;
+export type ImageResponseFormat =
+  (typeof IMAGE_RESPONSE_FORMATS)[number];
+
 export const OUTPUT_DEFAULT_KEYS = [
   "n",
   "size",
@@ -34,6 +38,7 @@ export const OUTPUT_DEFAULT_KEYS = [
   "background",
   "output_format",
   "output_compression",
+  "response_format",
   "moderation",
   "complexity",
 ] as const;

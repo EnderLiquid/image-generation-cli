@@ -5,6 +5,7 @@ import {
   IMAGE_FORMATS,
   IMAGE_MODERATIONS,
   IMAGE_QUALITIES,
+  IMAGE_RESPONSE_FORMATS,
 } from "../types.js";
 import type {
   ImageBackground,
@@ -12,6 +13,7 @@ import type {
   ImageFormat,
   ImageModeration,
   ImageQuality,
+  ImageResponseFormat,
 } from "../types.js";
 import { configError, usageError } from "../errors.js";
 
@@ -52,6 +54,7 @@ export const OutputDefaultsSchema = z.strictObject({
   background: z.enum(IMAGE_BACKGROUNDS).nullable().optional(),
   output_format: z.enum(IMAGE_FORMATS).nullable().optional(),
   output_compression: z.number().int().min(0).max(100).nullable().optional(),
+  response_format: z.enum(IMAGE_RESPONSE_FORMATS).nullable().optional(),
   moderation: z.enum(IMAGE_MODERATIONS).nullable().optional(),
   complexity: z.enum(IMAGE_COMPLEXITIES).nullable().optional(),
 });
@@ -62,6 +65,7 @@ export type OutputQuality = ImageQuality;
 export type OutputBackground = ImageBackground;
 export type OutputModeration = ImageModeration;
 export type OutputComplexity = ImageComplexity;
+export type OutputResponseFormat = ImageResponseFormat;
 
 const ModelSchema = z.strictObject({
   defaults: OutputDefaultsSchema.optional(),

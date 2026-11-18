@@ -41,7 +41,9 @@ Authorization: Bearer <apiKey>
 }
 ```
 
-可选字段：`moderation`、`complexity`。CLI 的短横线参数对应请求中的下划线字段，例如 `--output-format` 对应 `output_format`。
+可选字段：`moderation`、`complexity`、`response_format`。CLI 的短横线参数对应请求中的下划线字段，例如 `--output-format` 对应 `output_format`。
+
+`response_format` 取 `url` 或 `b64_json`。OpenAI 已标记该字段废弃，CLI 默认不发送；只有兼容中转明确需要时再设置。实际响应以 `data` 中的字段为准。
 
 ## edit
 
