@@ -19,6 +19,10 @@ import {
   type OutputDefaults,
 } from "./config/schema.js";
 import {
+  DEFAULT_RETRIES,
+  DEFAULT_TIMEOUT_SECONDS,
+} from "./defaults.js";
+import {
   AppError,
   ioError,
   isAppError,
@@ -218,13 +222,13 @@ program
     "--timeout <seconds>",
     "请求超时秒数",
     parsePositiveInteger,
-    180,
+    DEFAULT_TIMEOUT_SECONDS,
   )
   .option(
     "--retries <count>",
     "可重试错误次数，默认 0",
     parseNonNegativeInteger,
-    0,
+    DEFAULT_RETRIES,
   )
   .option("--dry-run", "只输出请求，不调用 API")
   .option("--config <path>", "配置文件路径")
@@ -288,13 +292,13 @@ program
     "--timeout <seconds>",
     "请求超时秒数",
     parsePositiveInteger,
-    180,
+    DEFAULT_TIMEOUT_SECONDS,
   )
   .option(
     "--retries <count>",
     "可重试错误次数，默认 0",
     parseNonNegativeInteger,
-    0,
+    DEFAULT_RETRIES,
   )
   .option("--dry-run", "只输出请求，不调用 API")
   .option("--config <path>", "配置文件路径")

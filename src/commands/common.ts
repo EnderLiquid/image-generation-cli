@@ -14,6 +14,10 @@ import {
   validateDefaults,
   type OutputDefaults,
 } from "../config/schema.js";
+import {
+  DEFAULT_RETRIES,
+  DEFAULT_TIMEOUT_SECONDS,
+} from "../defaults.js";
 import { usageError } from "../errors.js";
 import { sanitizeRequestForDryRun } from "../input/data-url.js";
 import { detectImageFormat } from "../input/mime.js";
@@ -145,8 +149,8 @@ export async function runImageOperation(
     url: buildEndpointUrl(provider.apiUrl, options.operation),
     apiKey,
     body: request,
-    timeoutSeconds: options.timeoutSeconds ?? 180,
-    retries: options.retries ?? 0,
+    timeoutSeconds: options.timeoutSeconds ?? DEFAULT_TIMEOUT_SECONDS,
+    retries: options.retries ?? DEFAULT_RETRIES,
     onRetry: options.onRetry,
   });
 
