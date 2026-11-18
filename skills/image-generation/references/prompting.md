@@ -56,9 +56,9 @@ Constraints: ...
 
 省略参数时，使用配置中的默认值；配置未设置时由 API 使用自身默认值，`quality` 默认为 `auto`。默认值通常更合适，没有明确理由不要调整。调低质量可能增加废片和重试，反而提高成本。
 
-小字、密集标签、图表或幻灯片需要更清晰的文字时，可以先试 `--quality high`；仍不足再试 `xhigh` 或 `max`。`xhigh` 和 `max` 是默认效果不佳时的逃逸窗口，OpenAI GPT Image 2.5/2.6 已支持。
+小字、密集标签、图表或幻灯片需要更清晰的文字时，可以先试 `--quality high`；仍不足再试 `xhigh` 或 `max`。`xhigh` 和 `max` 是默认效果不佳时的逃逸窗口，需要模型支持；OpenAI GPT Image 2.5/2.6 已支持。
 
-`--complexity low` 只在明确要减少模型发挥、保持局部改动时使用。`--complexity high` 是 OpenAI GPT Image 2.5/2.6 的默认值，不需要显式传。
+`--complexity` 需要模型支持；OpenAI GPT Image 2.6 已支持。`low` 只在明确要减少模型发挥、保持局部改动时使用。
 
 ## 模型示例
 
