@@ -55,8 +55,6 @@ image-generation
 | `--dry-run` | 只输出请求，不调用 API |
 | `--config <path>` | 配置文件路径 |
 
-`--response-format` 控制响应载体，`--output-format` 控制图片编码。OpenAI 已标记 `response_format` 废弃，默认不发送；只在中转要求时设置。实际响应可能仍与请求不同，CLI 按 `data` 内容处理。
-
 ### size
 
 `--size` 取 `auto` 或 `WIDTHxHEIGHT`，并满足：
