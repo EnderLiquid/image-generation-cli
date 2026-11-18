@@ -41,4 +41,4 @@ npm run dev -- --help
 - 配置位于 `~/.image-generation-cli`，密钥通过 `.env` 或进程环境变量提供。
 - 任何输出都不得包含真实 API key、Authorization 头或 `.env` 内容。
 - 默认输出目录为 `./generated`，目标文件冲突时退出码 6，`--force` 覆盖。
-- 测试使用 `.pi/temp`，默认不调用真实 API。
+- 测试使用系统临时目录，默认不调用真实 API。

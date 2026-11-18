@@ -1,8 +1,10 @@
-import { truncate, writeFile } from "node:fs/promises";
+import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
+  assertLocalImageSize,
   loadImageReference,
+  MAX_LOCAL_IMAGE_BYTES,
   sanitizeRequestForDryRun,
 } from "../src/input/data-url.js";
 import { readImageInfo } from "../src/input/image-info.js";
@@ -10,9 +12,9 @@ import { detectImageFormat } from "../src/input/mime.js";
 import {
   makeJpegBuffer,
   makePngBuffer,
-  makeTempDir,
   makeWebpBuffer,
 } from "./helpers.js";
+import { makeTempDir } from "./temp.js";
 
 describe("输入图片", () => {
   it("识别 png、jpeg、webp", () => {
@@ -121,16 +123,20 @@ describe("输入图片", () => {
     expect(reference.rawBytes).toBe(0);
   });
 
-  it("单张本地图片超过上限时报错", async () => {
-    const dir = await makeTempDir();
-    const inputPath = path.join(dir, "oversized.png");
-    await writeFile(inputPath, makePngBuffer());
-    await truncate(inputPath, 16 * 1024 * 1024);
+  it("拒绝超过 data URL 上限的本地图片", () => {
+    expect(() =>
+      assertLocalImageSize("ok.png", MAX_LOCAL_IMAGE_BYTES),
+    ).not.toThrow();
 
-    await expect(loadImageReference(inputPath)).rejects.toMatchObject({
-      kind: "usage",
-      exitCode: 2,
-    });
+    let caught: unknown;
+
+    try {
+      assertLocalImageSize("oversized.png", MAX_LOCAL_IMAGE_BYTES + 1);
+    } catch (error) {
+      caught = error;
+    }
+
+    expect(caught).toMatchObject({ kind: "usage", exitCode: 2 });
   });
 
   it("mask 要求 PNG", async () => {

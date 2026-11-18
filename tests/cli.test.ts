@@ -6,10 +6,10 @@ import { describe, expect, it } from "vitest";
 import {
   makeApiResponse,
   makePngBuffer,
-  makeTempDir,
   startMockServer,
   writeTestConfig,
 } from "./helpers.js";
+import { makeTempDir } from "./temp.js";
 
 const cliPath = fileURLToPath(
   new URL("../src/cli.ts", import.meta.url),

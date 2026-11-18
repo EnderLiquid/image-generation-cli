@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 import path from "node:path";
@@ -104,12 +104,6 @@ export async function startMockServer(
         });
       }),
   };
-}
-
-export async function makeTempDir(): Promise<string> {
-  const root = path.resolve(".pi/temp");
-  await mkdir(root, { recursive: true });
-  return mkdtemp(path.join(root, "image-generation-cli-test-"));
 }
 
 export interface TestConfigOptions {

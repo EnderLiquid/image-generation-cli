@@ -12,10 +12,8 @@ import {
   type OutputDefaults,
 } from "../src/config/schema.js";
 import { resolveApiKey } from "../src/config/secrets.js";
-import {
-  makeTempDir,
-  writeTestConfig,
-} from "./helpers.js";
+import { writeTestConfig } from "./helpers.js";
+import { makeTempDir } from "./temp.js";
 
 const originalEnv = { ...process.env };
 

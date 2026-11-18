@@ -12,10 +12,10 @@ import {
   makeApiResponse,
   makeJpegBuffer,
   makePngBuffer,
-  makeTempDir,
   startMockServer,
   writeTestConfig,
 } from "./helpers.js";
+import { makeTempDir } from "./temp.js";
 
 async function fileExists(filePath: string): Promise<boolean> {
   try {

@@ -6,7 +6,7 @@ import { readImageInfo, type ImageInfo } from "./image-info.js";
 import { detectImageFormat, mimeForFormat } from "./mime.js";
 
 export const MAX_IMAGE_URL_CHARS = 20_971_520;
-const MAX_LOCAL_BYTES =
+export const MAX_LOCAL_IMAGE_BYTES =
   Math.floor((MAX_IMAGE_URL_CHARS - 64) / 4) * 3;
 
 export interface ImageReference {
@@ -24,6 +24,17 @@ export interface LoadImageOptions {
 
 function isHttpUrl(value: string): boolean {
   return /^https?:\/\//i.test(value);
+}
+
+export function assertLocalImageSize(
+  filePath: string,
+  size: number,
+): void {
+  if (size > MAX_LOCAL_IMAGE_BYTES) {
+    throw usageError(
+      `本地图片超过 data URL 大小限制: ${filePath} (${size} 字节)`,
+    );
+  }
 }
 
 export async function loadImageReference(
@@ -73,11 +84,7 @@ export async function loadImageReference(
     throw usageError(`图片路径不是文件: ${filePath}`);
   }
 
-  if (fileStat.size > MAX_LOCAL_BYTES) {
-    throw usageError(
-      `本地图片超过 data URL 大小限制: ${filePath} (${fileStat.size} 字节)`,
-    );
-  }
+  assertLocalImageSize(filePath, fileStat.size);
 
   let buffer: Buffer;
   try {
