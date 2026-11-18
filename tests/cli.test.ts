@@ -184,6 +184,34 @@ describe("CLI 入口", () => {
     expect(output.dryRun).toBe(true);
   });
 
+  it("generate --response-format url 计划 txt", async () => {
+    const dir = await makeTempDir();
+    const configPath = await writeTestConfig(dir, {
+      apiUrl: "https://example.com/v1",
+    });
+
+    const result = await runCli([
+      "generate",
+      "--config",
+      configPath,
+      "--prompt",
+      "url",
+      "--response-format",
+      "url",
+      "--out-dir",
+      path.join(dir, "out"),
+      "--dry-run",
+    ]);
+
+    expect(result.code).toBe(0);
+    const output = JSON.parse(result.stdout) as {
+      request: { response_format?: string };
+      output: { files: string[] };
+    };
+    expect(output.request.response_format).toBe("url");
+    expect(output.output.files[0]).toMatch(/\.txt$/);
+  });
+
   it("doctor 对缺失配置返回退出码 2", async () => {
     const dir = await makeTempDir();
     const result = await runCli([
