@@ -207,3 +207,7 @@ npm run dev -- --help
 - 提示词：`skills/image-generation/references/prompting.md`
 - 配置：`skills/image-generation/references/config.md`
 - API 协议：`skills/image-generation/references/image-api.md`
+
+## 许可证
+
+MIT
