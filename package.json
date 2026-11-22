@@ -1,7 +1,7 @@
 {
   "name": "image-generation-cli",
   "version": "0.1.0",
-  "description": "OpenAI Image API 兼容的命令行图片生成与编辑工具",
+  "description": "基于 GPT Image API 的命令行图片生成与编辑工具",
   "type": "module",
   "bin": {
     "image-generation": "./dist/cli.js"
