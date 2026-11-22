@@ -157,20 +157,13 @@ image-generation generate --prompt "..." --retries 2
 
 ## Skill
 
-本机软链接：
-
-```bash
-MSYS=winsymlinks:nativestrict ln -s /d/projects/ts/image-generation-cli/skills/image-generation \
-  /c/Users/Admin/.pi/agent/skills/image-generation
-```
+`skills/image-generation` 包含在 npm 包中。
 
 查看打包内 skill 路径：
 
 ```bash
 image-generation skill path
 ```
-
-`skills/image-generation` 会包含在 npm 包中。
 
 ## 开发
 
